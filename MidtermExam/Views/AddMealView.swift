@@ -23,23 +23,27 @@ struct AddMealView: View {
                 .ignoresSafeArea()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    Text("Add Meal")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundStyle(.white)
-
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("FOOD DETAILS")
+                VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("FOOD & NUTRITION")
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(FitColors.primary)
+                        Text("Add meal")
+                            .font(.system(size: 30, weight: .bold))
+                            .foregroundStyle(.white)
+                        Text("Save a meal and its nutrition details.")
+                            .font(.system(size: 13))
+                            .foregroundStyle(FitColors.textSecondary)
+                    }
+                    .padding(.bottom, 4)
 
+                    FitFormSection(title: "Meal", icon: "fork.knife") {
                         FitTextField(title: "Food name", text: $foodName)
 
-                        VStack(alignment: .leading, spacing: 9) {
-                            Text("Meal category")
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Category")
                                 .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(.white.opacity(0.85))
-
+                                .foregroundStyle(.white.opacity(0.88))
                             Menu {
                                 ForEach(categories, id: \.self) { category in
                                     Button {
@@ -53,8 +57,8 @@ struct AddMealView: View {
                                     }
                                 }
                             } label: {
-                                HStack {
-                                    Image(systemName: "fork.knife")
+                                HStack(spacing: 10) {
+                                    Image(systemName: "tag.fill")
                                         .foregroundStyle(FitColors.background)
                                     Text(mealCategory.isEmpty ? "Choose category" : mealCategory)
                                         .font(.system(size: 15, weight: .semibold))
@@ -68,56 +72,38 @@ struct AddMealView: View {
                                 .frame(maxWidth: .infinity, minHeight: 48)
                                 .background(Color(red: 0.96, green: 0.97, blue: 0.99))
                                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black.opacity(0.10), lineWidth: 1))
                             }
-                        }
-
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("NUTRITION FACTS")
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundStyle(FitColors.primary)
-
-                            FitTextField(title: "Calories", text: $calories, keyboardType: .numberPad)
-
-                            HStack(spacing: 10) {
-                                FitTextField(title: "Protein (g)", text: $protein, keyboardType: .numberPad)
-                                FitTextField(title: "Carbs (g)", text: $carbohydrates, keyboardType: .numberPad)
-                            }
-                            FitTextField(title: "Fat (g)", text: $fat, keyboardType: .numberPad)
-                        }
-
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("MEAL DETAILS")
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundStyle(FitColors.primary)
-
-                            DatePicker("Date", selection: $date, displayedComponents: [.date])
-                                .tint(FitColors.primary)
-                                .foregroundStyle(.white)
-
-                            HStack {
-                                Text("Servings")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundStyle(.white.opacity(0.9))
-                                Spacer()
-                                Stepper(value: $servings, in: 1...10) {
-                                    Text("\(servings)")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundStyle(.white)
-                                }
-                            }
-                        }
-
-                        FitButton(title: "Save meal") {
-                            saveMeal()
                         }
                     }
-                    .padding(18)
-                    .background(Color(red: 0.18, green: 0.22, blue: 0.28).opacity(0.92))
-                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                    )
+
+                    FitFormSection(title: "Nutrition", icon: "chart.bar.fill") {
+                        FitTextField(title: "Calories (kcal)", text: $calories, keyboardType: .numberPad)
+                        FitTextField(title: "Protein (g)", text: $protein, keyboardType: .numberPad)
+                        FitTextField(title: "Carbohydrates (g)", text: $carbohydrates, keyboardType: .numberPad)
+                        FitTextField(title: "Fat (g)", text: $fat, keyboardType: .numberPad)
+                    }
+
+                    FitFormSection(title: "Serving", icon: "calendar") {
+                        HStack(spacing: 10) {
+                            Image(systemName: "calendar")
+                                .foregroundStyle(FitColors.secondary)
+                                .frame(width: 20)
+                            Text("Meal date")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(FitColors.textSecondary)
+                            Spacer(minLength: 4)
+                            DatePicker("Meal date", selection: $date, displayedComponents: [.date])
+                                .labelsHidden()
+                                .tint(FitColors.primary)
+                        }
+                        FormStepperRow(title: "Servings", value: $servings, range: 1...10)
+                    }
+
+                    FitButton(title: "Save meal") {
+                        saveMeal()
+                    }
+                    .padding(.top, 2)
                 }
                 .padding(20)
             }

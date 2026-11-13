@@ -23,95 +23,69 @@ struct AddWorkoutView: View {
                 .ignoresSafeArea()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    Text("Add Workout")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundStyle(.white)
+                VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("TRAINING SESSION")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(FitColors.primary)
+                        Text("Add workout")
+                            .font(.system(size: 30, weight: .bold))
+                            .foregroundStyle(.white)
+                        Text("Record the details of your session.")
+                            .font(.system(size: 13))
+                            .foregroundStyle(FitColors.textSecondary)
+                    }
+                    .padding(.bottom, 4)
 
-                    VStack(alignment: .leading, spacing: 16) {
+                    FitFormSection(title: "Session", icon: "dumbbell.fill") {
                         FitTextField(title: "Workout name", text: $workoutName)
 
-                        VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Text("Workout type")
-                                .font(.subheadline)
-                                .foregroundStyle(.white.opacity(0.85))
-
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(.white.opacity(0.88))
                             WorkoutTypePicker(types: types, selection: $workoutType)
                         }
 
-                        VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "calendar")
+                                .foregroundStyle(FitColors.secondary)
+                                .frame(width: 20)
                             Text("Training date")
-                                .font(.subheadline)
-                                .foregroundStyle(.white.opacity(0.85))
-
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(FitColors.textSecondary)
+                            Spacer(minLength: 4)
                             DatePicker("Training date", selection: $date, displayedComponents: [.date])
-                                .tint(FitColors.primary)
                                 .labelsHidden()
-                        }
-
-                        VStack(spacing: 12) {
-                            HStack {
-                                Text("Duration")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.white.opacity(0.85))
-                                Spacer()
-                                Stepper(value: $duration, in: 10...180, step: 5) {
-                                    Text("\(duration) min")
-                                        .foregroundStyle(.white)
-                                }
-                            }
-
-                            HStack {
-                                Text("Sets")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.white.opacity(0.85))
-                                Spacer()
-                                Stepper(value: $sets, in: 1...10) {
-                                    Text("\(sets)")
-                                        .foregroundStyle(.white)
-                                }
-                            }
-
-                            HStack {
-                                Text("Repetitions")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.white.opacity(0.85))
-                                Spacer()
-                                Stepper(value: $repetitions, in: 1...30) {
-                                    Text("\(repetitions)")
-                                        .foregroundStyle(.white)
-                                }
-                            }
-                        }
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Notes")
-                                .font(.subheadline)
-                                .foregroundStyle(.white.opacity(0.85))
-
-                            TextField("Notes", text: $notes, axis: .vertical)
-                                .padding(12)
-                                .frame(minHeight: 90)
-                                .background(Color(red: 0.96, green: 0.97, blue: 0.98).opacity(0.98))
-                                .foregroundStyle(.black)
-                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        }
-
-                        Toggle("Workout completed", isOn: $isCompleted)
-                            .tint(FitColors.primary)
-                            .foregroundStyle(.white.opacity(0.9))
-
-                        FitButton(title: "Save workout") {
-                            saveWorkout()
+                                .tint(FitColors.primary)
                         }
                     }
-                    .padding(18)
-                    .background(Color(red: 0.18, green: 0.22, blue: 0.28).opacity(0.92))
-                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                    )
+
+                    FitFormSection(title: "Performance", icon: "chart.bar.fill") {
+                        FormStepperRow(title: "Duration", value: $duration, range: 10...180, step: 5, suffix: "min")
+                        Divider().overlay(Color.white.opacity(0.08))
+                        FormStepperRow(title: "Sets", value: $sets, range: 1...10)
+                        Divider().overlay(Color.white.opacity(0.08))
+                        FormStepperRow(title: "Repetitions", value: $repetitions, range: 1...30)
+                        Toggle("Workout completed", isOn: $isCompleted)
+                            .font(.system(size: 13, weight: .medium))
+                            .tint(FitColors.primary)
+                            .foregroundStyle(.white.opacity(0.9))
+                    }
+
+                    FitFormSection(title: "Notes", icon: "text.alignleft") {
+                        TextField("Add notes about this session", text: $notes, axis: .vertical)
+                            .padding(12)
+                            .frame(minHeight: 86, alignment: .topLeading)
+                            .background(Color(red: 0.96, green: 0.97, blue: 0.99))
+                            .foregroundStyle(.black)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+
+                    FitButton(title: "Save workout") {
+                        saveWorkout()
+                    }
+                    .padding(.top, 2)
                 }
                 .padding(20)
             }

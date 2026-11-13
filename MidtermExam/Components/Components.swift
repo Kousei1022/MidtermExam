@@ -110,6 +110,58 @@ struct FitCard<Content: View>: View {
     }
 }
 
+struct FitFormSection<Content: View>: View {
+    let title: String
+    let icon: String
+    let content: Content
+
+    init(title: String, icon: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.icon = icon
+        self.content = content()
+    }
+
+    var body: some View {
+        FitCard {
+            VStack(alignment: .leading, spacing: 15) {
+                HStack(spacing: 9) {
+                    Image(systemName: icon)
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(FitColors.primary)
+                    Text(title.uppercased())
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(FitColors.textSecondary)
+                }
+                content
+            }
+        }
+    }
+}
+
+struct FormStepperRow: View {
+    let title: String
+    @Binding var value: Int
+    let range: ClosedRange<Int>
+    var step: Int = 1
+    var suffix = ""
+
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(FitColors.textSecondary)
+            Spacer()
+            Stepper(value: $value, in: range, step: step) {
+                Text(suffix.isEmpty ? "\(value)" : "\(value) \(suffix)")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .monospacedDigit()
+            }
+            .tint(FitColors.primary)
+        }
+    }
+}
+
 struct SectionHeader: View {
     let title: String
     let subtitle: String? = nil
