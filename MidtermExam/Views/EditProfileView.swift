@@ -12,13 +12,12 @@ struct EditProfileView: View {
     @State private var weight: String
     @State private var fitnessGoal: String
 
-    init() {
-        let user = AuthManager().currentUser
-        _fullName = State(initialValue: user?.fullName ?? "")
-        _email = State(initialValue: user?.email ?? "")
-        _height = State(initialValue: user?.height.formatted() ?? "0")
-        _weight = State(initialValue: user?.weight.formatted() ?? "0")
-        _fitnessGoal = State(initialValue: user?.fitnessGoal ?? "Build Muscle")
+    init(user: UserModel) {
+        _fullName = State(initialValue: user.fullName)
+        _email = State(initialValue: user.email)
+        _height = State(initialValue: user.height > 0 ? user.height.formatted() : "")
+        _weight = State(initialValue: user.weight > 0 ? user.weight.formatted() : "")
+        _fitnessGoal = State(initialValue: user.fitnessGoal)
     }
 
     private let goals = ["Build Muscle", "Lose Fat", "Maintain Weight", "Improve Fitness"]
@@ -66,6 +65,6 @@ struct EditProfileView: View {
 }
 
 #Preview {
-    EditProfileView()
+    EditProfileView(user: UserModel(fullName: "Test User", username: "test", email: "test@example.com", passwordHash: "preview"))
         .environmentObject(AuthManager())
 }

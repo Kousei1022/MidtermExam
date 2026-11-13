@@ -4,6 +4,37 @@ import SwiftData
 struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
     @Environment(\.modelContext) private var context
+    @Query(sort: \WorkoutModel.date, order: .reverse) private var allWorkouts: [WorkoutModel]
+
+    private var user: UserModel? {
+        authManager.currentUser
+    }
+
+    private var workouts: [WorkoutModel] {
+        guard let user else { return [] }
+        return allWorkouts.filter { $0.user?.id == user.id }
+    }
+
+    private var workoutsThisWeek: Int {
+        guard let week = Calendar.current.dateInterval(of: .weekOfYear, for: Date()) else { return 0 }
+        return workouts.filter { week.contains($0.date) }.count
+    }
+
+    private var totalMinutes: Int {
+        workouts.reduce(0) { $0 + $1.duration }
+    }
+
+    private var profileCompletion: Double {
+        guard let user else { return 0 }
+        let completedFields = [
+            !user.fullName.isEmpty,
+            !user.email.isEmpty,
+            user.height > 0,
+            user.weight > 0,
+            !user.fitnessGoal.isEmpty
+        ].filter { $0 }.count
+        return Double(completedFields) / 5
+    }
 
     var body: some View {
         ZStack {
@@ -16,48 +47,170 @@ struct ProfileView: View {
                         .font(.system(size: 28, weight: .bold))
                         .foregroundStyle(.white)
 
-                    FitCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Circle()
-                                    .fill(FitColors.primary)
-                                    .frame(width: 52, height: 52)
-                                    .overlay(Text(String((authManager.currentUser?.fullName.prefix(1) ?? "U")).uppercased()).fontWeight(.bold).foregroundStyle(.black))
+                    if let user {
+                        FitCard {
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack(spacing: 14) {
+                                    Circle()
+                                        .fill(FitColors.primary)
+                                        .frame(width: 58, height: 58)
+                                        .overlay {
+                                            Text(String(user.fullName.prefix(1)).uppercased())
+                                                .font(.system(size: 22, weight: .bold))
+                                                .foregroundStyle(.black)
+                                        }
 
-                                VStack(alignment: .leading) {
-                                    Text(authManager.currentUser?.fullName ?? "User")
-                                        .font(.system(size: 18, weight: .bold))
-                                        .foregroundStyle(.white)
-                                    Text(authManager.currentUser?.email ?? "")
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(user.fullName)
+                                            .font(.system(size: 19, weight: .bold))
+                                            .foregroundStyle(.white)
+                                        Text("@\(user.username)")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundStyle(FitColors.textSecondary)
+                                        Text(user.email)
+                                            .font(.system(size: 12))
+                                            .foregroundStyle(FitColors.textSecondary)
+                                    }
+                                    Spacer(minLength: 0)
+                                }
+
+                                Divider().overlay(Color.white.opacity(0.12))
+
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack {
+                                        Text("Profile details")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundStyle(.white)
+                                        Spacer()
+                                        Text("\(Int(profileCompletion * 100))%")
+                                            .font(.system(size: 13, weight: .bold))
+                                            .foregroundStyle(FitColors.primary)
+                                    }
+                                    ProgressView(value: profileCompletion)
+                                        .tint(FitColors.primary)
+                                    Text(profileCompletion < 1 ? "Add your height and weight to complete your profile." : "Your profile details are complete.")
                                         .font(.system(size: 12))
                                         .foregroundStyle(FitColors.textSecondary)
                                 }
                             }
                         }
-                    }
 
-                    VStack(spacing: 12) {
-                        NavigationLink(destination: EditProfileView()) {
-                            ProfileRow(label: "Edit profile")
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Training summary")
+                                .font(.system(size: 19, weight: .bold))
+                                .foregroundStyle(.white)
+
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                                ProfileMetric(value: "\(workoutsThisWeek)", label: "This week", icon: "calendar")
+                                ProfileMetric(value: "\(workouts.count)", label: "Total workouts", icon: "dumbbell.fill")
+                                ProfileMetric(value: "\(totalMinutes / 60)h \(totalMinutes % 60)m", label: "Time trained", icon: "clock.fill")
+                                ProfileMetric(value: "\(workouts.filter(\.isCompleted).count)", label: "Completed", icon: "checkmark.circle.fill")
+                            }
                         }
-                        NavigationLink(destination: NotificationView()) {
-                            ProfileRow(label: "Notifications")
+
+                        FitCard {
+                            VStack(alignment: .leading, spacing: 14) {
+                                HStack {
+                                    Text("Your details")
+                                        .font(.system(size: 17, weight: .bold))
+                                        .foregroundStyle(.white)
+                                    Spacer()
+                                    NavigationLink(destination: EditProfileView(user: user)) {
+                                        Label("Edit", systemImage: "pencil")
+                                            .font(.system(size: 13, weight: .semibold))
+                                            .foregroundStyle(FitColors.primary)
+                                    }
+                                }
+
+                                ProfileInfoRow(label: "Fitness goal", value: user.fitnessGoal, icon: "scope")
+                                ProfileInfoRow(label: "Height", value: user.height > 0 ? "\(user.height.formatted()) cm" : "Not set", icon: "ruler")
+                                ProfileInfoRow(label: "Weight", value: user.weight > 0 ? "\(user.weight.formatted()) kg" : "Not set", icon: "scalemass")
+                                ProfileInfoRow(label: "Member since", value: user.createdAt.formatted(date: .abbreviated, time: .omitted), icon: "calendar")
+                            }
                         }
-                        Button {
-                            authManager.logout()
-                        } label: {
-                            ProfileRow(label: "Log out")
+
+                        VStack(spacing: 12) {
+                            NavigationLink(destination: EditProfileView(user: user)) {
+                                ProfileRow(label: "Edit profile")
+                            }
+                            NavigationLink(destination: NotificationView()) {
+                                ProfileRow(label: "Notifications")
+                            }
+                            Button {
+                                authManager.logout()
+                            } label: {
+                                ProfileRow(label: "Log out")
+                            }
+                            Button {
+                                authManager.deleteCurrentUser()
+                            } label: {
+                                ProfileRow(label: "Delete account", destructive: true)
+                            }
                         }
-                        Button {
-                            authManager.deleteCurrentUser()
-                        } label: {
-                            ProfileRow(label: "Delete account", destructive: true)
-                        }
+                    } else {
+                        Text("Sign in to view your profile and training summary.")
+                            .foregroundStyle(FitColors.textSecondary)
                     }
                 }
                 .padding(20)
             }
         }
+    }
+}
+
+private struct ProfileMetric: View {
+    let value: String
+    let label: String
+    let icon: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(FitColors.primary)
+                .frame(width: 34, height: 34)
+                .background(FitColors.primary.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(value)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                Text(label)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(FitColors.textSecondary)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(FitColors.panel)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+}
+
+private struct ProfileInfoRow: View {
+    let label: String
+    let value: String
+    let icon: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .foregroundStyle(FitColors.secondary)
+                .frame(width: 20)
+            Text(label)
+                .foregroundStyle(FitColors.textSecondary)
+            Spacer()
+            Text(value)
+                .fontWeight(.semibold)
+                .foregroundStyle(.white)
+                .multilineTextAlignment(.trailing)
+        }
+        .font(.system(size: 13))
     }
 }
 
