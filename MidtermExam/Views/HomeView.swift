@@ -1,149 +1,182 @@
 
 import SwiftUI
+import SwiftData
 
 struct HomeView: View {
-    private let dateTitle: String = {
-        Date().formatted(.dateTime.weekday(.wide).month(.wide).day().year())
-    }()
+    @EnvironmentObject private var authManager: AuthManager
+    @Environment(\.modelContext) private var context
+
+    @State private var workouts: [WorkoutModel] = []
+    @State private var meals: [MealModel] = []
+
+    private var user: UserModel? {
+        authManager.currentUser
+    }
+
+    private var totalCalories: Int {
+        meals.reduce(0) { $0 + ($1.calories * $1.servings) }
+    }
+
+    private var totalProtein: Int {
+        meals.reduce(0) { $0 + ($1.protein * $1.servings) }
+    }
+
+    private var currentGoalProgress: Double {
+        guard let user else { return 0 }
+        let minutes = DataManager.totalWorkoutMinutes(for: user, context: context)
+        return min(1, Double(minutes) / 240.0)
+    }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Welcome back")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+            ZStack {
+                LinearGradient(colors: [FitColors.background, Color(red: 0.05, green: 0.09, blue: 0.15)], startPoint: .top, endPoint: .bottom)
+                    .ignoresSafeArea()
 
-                            Text("FitTrack")
-                                .font(.system(size: 34, weight: .bold))
-                                .foregroundStyle(.primary)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 18) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Welcome back")
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(FitColors.textSecondary)
+                                Text(user?.fullName ?? "User")
+                                    .font(.system(size: 28, weight: .bold))
+                                    .foregroundStyle(.white)
+                            }
+                            Spacer()
+                            Circle()
+                                .fill(FitColors.primary)
+                                .frame(width: 46, height: 46)
+                                .overlay(Text(String((user?.fullName.prefix(1) ?? "U")).uppercased()).font(.system(size: 18, weight: .heavy)).foregroundStyle(.black))
                         }
 
-                        Spacer()
-
-                        Circle()
-                            .fill(LinearGradient(colors: [.indigo, .cyan], startPoint: .topLeading, endPoint: .bottomTrailing))
-                            .frame(width: 52, height: 52)
-                            .overlay(
-                                Image(systemName: "figure.run")
+                        FitCard {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Current Goal")
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundStyle(FitColors.textSecondary)
+                                Text(user?.fitnessGoal ?? "Build Muscle")
+                                    .font(.system(size: 24, weight: .bold))
                                     .foregroundStyle(.white)
-                                    .font(.title3)
-                            )
-                    }
+                                ProgressView(value: currentGoalProgress)
+                                    .tint(FitColors.primary)
+                                    .scaleEffect(y: 1.4)
+                                Text("\(Int(currentGoalProgress * 100))% complete")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundStyle(FitColors.primary)
+                            }
+                        }
 
-                    Text(dateTitle)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-
-                    ZStack(alignment: .bottomTrailing) {
-                        RoundedRectangle(cornerRadius: 28, style: .continuous)
-                            .fill(LinearGradient(colors: [.indigo, .blue, .cyan], startPoint: .topLeading, endPoint: .bottomTrailing))
-                            .frame(height: 200)
-
-                        VStack(alignment: .leading, spacing: 14) {
-                            Text("CURRENT GOAL")
-                                .font(.caption)
-                                .foregroundStyle(.white.opacity(0.8))
-                                .tracking(1.2)
-
-                            Text("Build Strength")
-                                .font(.system(size: 28, weight: .bold))
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Today's stats")
+                                .font(.system(size: 20, weight: .bold))
                                 .foregroundStyle(.white)
 
-                            Text("Stay consistent and keep your weekly momentum strong.")
-                                .font(.subheadline)
-                                .foregroundStyle(.white.opacity(0.9))
-
-                            ProgressView(value: 0.72)
-                                .tint(.white)
-                                .scaleEffect(x: 1, y: 1.2, anchor: .center)
-                        }
-                        .padding(24)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        CircularProgressRing(progress: 0.72)
-                            .padding(22)
-                    }
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Today's summary")
-                            .font(.title2)
-                            .fontWeight(.bold)
-
-                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 14) {
-                            StatCard(title: "Workouts", value: "03", subtitle: "This week", icon: "dumbbell.fill", accent: .indigo)
-                            StatCard(title: "Calories", value: "1,240", subtitle: "burned", icon: "flame.fill", accent: .orange)
-                            StatCard(title: "Protein", value: "92g", subtitle: "goal 120g", icon: "bolt.fill", accent: .mint)
-                            StatCard(title: "Progress", value: "72%", subtitle: "on track", icon: "chart.bar.fill", accent: .cyan)
-                        }
-                    }
-
-                    VStack(alignment: .leading, spacing: 14) {
-                        Text("Next workout")
-                            .font(.title2)
-                            .fontWeight(.bold)
-
-                        HStack(alignment: .center, spacing: 14) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 18)
-                                    .fill(Color.indigo.opacity(0.12))
-                                    .frame(width: 56, height: 56)
-
-                                Image(systemName: "figure.strengthtraining.traditional")
-                                    .font(.title3)
-                                    .foregroundStyle(.indigo)
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                                StatCard(title: "Workouts", value: "\(workouts.count)", subtitle: "This week", icon: "dumbbell.fill", accent: FitColors.primary)
+                                StatCard(title: "Calories", value: "\(totalCalories)", subtitle: "Logged", icon: "flame.fill", accent: .orange)
+                                StatCard(title: "Protein", value: "\(totalProtein)g", subtitle: "Target", icon: "bolt.fill", accent: .green)
+                                StatCard(title: "Progress", value: "\(Int(currentGoalProgress * 100))%", subtitle: "Goal", icon: "chart.bar.fill", accent: FitColors.secondary)
                             }
-
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Upper Body Power")
-                                    .font(.headline)
-                                Text("Chest • Back • Arms")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
-
-                            Spacer()
-
-                            Text("45 min")
-                                .font(.headline)
-                                .foregroundStyle(.indigo)
                         }
-                        .padding(16)
-                        .background(Color(.secondarySystemBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Quick actions")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundStyle(.white)
+
+                            HStack(spacing: 12) {
+                                NavigationLink(destination: WorkoutView()) {
+                                    QuickActionButton(label: "Workout", icon: "figure.strengthtraining.traditional")
+                                }
+                                NavigationLink(destination: NutritionView()) {
+                                    QuickActionButton(label: "Nutrition", icon: "fork.knife")
+                                }
+                                NavigationLink(destination: ProgressDashboardView()) {
+                                    QuickActionButton(label: "Progress", icon: "chart.bar.fill")
+                                }
+                            }
+                        }
+
+                        if let user, !workouts.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Next workout")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundStyle(.white)
+
+                                let nextWorkout = workouts.sorted(by: { $0.date < $1.date }).first
+                                if let nextWorkout {
+                                    HStack {
+                                        Image(systemName: "figure.strengthtraining.traditional")
+                                            .foregroundStyle(FitColors.primary)
+                                        VStack(alignment: .leading) {
+                                            Text(nextWorkout.workoutName)
+                                                .font(.system(size: 16, weight: .bold))
+                                                .foregroundStyle(.white)
+                                            Text("\(nextWorkout.workoutType) • \(nextWorkout.duration) min")
+                                                .font(.system(size: 12))
+                                                .foregroundStyle(FitColors.textSecondary)
+                                        }
+                                        Spacer()
+                                        Text(nextWorkout.isCompleted ? "Done" : "Planned")
+                                            .font(.system(size: 12, weight: .semibold))
+                                            .foregroundStyle(nextWorkout.isCompleted ? .green : FitColors.primary)
+                                    }
+                                    .padding(14)
+                                    .background(Color.white.opacity(0.04))
+                                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                }
+                            }
+                        }
+
+                        NavigationLink(destination: ProfileView()) {
+                            HStack {
+                                Text("Profile & settings")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(FitColors.textSecondary)
+                            }
+                            .padding(14)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.white.opacity(0.04))
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        }
                     }
+                    .padding(20)
                 }
-                .padding()
             }
-            .background(Color(.systemBackground))
-            .navigationTitle("Overview")
+            .onAppear {
+                guard let user else { return }
+                workouts = DataManager.workouts(for: user, context: context)
+                meals = DataManager.meals(for: user, context: context)
+            }
         }
     }
 }
 
-private struct CircularProgressRing: View {
-    let progress: Double
+private struct QuickActionButton: View {
+    let label: String
+    let icon: String
 
     var body: some View {
-        ZStack {
-            Circle()
-                .stroke(Color.white.opacity(0.25), lineWidth: 8)
-
-            Circle()
-                .trim(from: 0, to: progress)
-                .stroke(Color.white, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-
-            Text("72%")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(.white)
+        VStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .bold))
+            Text(label)
+                .font(.system(size: 12, weight: .semibold))
         }
-        .frame(width: 78, height: 78)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .background(Color.white.opacity(0.04))
+        .foregroundStyle(.white)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 
 #Preview {
     HomeView()
+        .environmentObject(AuthManager())
 }

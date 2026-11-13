@@ -1,184 +1,114 @@
 
 import SwiftUI
+import SwiftData
 
 struct NutritionView: View {
-    @State private var meals: [Meal] = [
-        Meal(name: "Grilled Chicken Bowl", calories: 540, protein: 42, servings: 1, isHighProtein: true),
-        Meal(name: "Greek Yogurt", calories: 210, protein: 18, servings: 1, isHighProtein: true),
-        Meal(name: "Avocado Toast", calories: 320, protein: 12, servings: 1, isHighProtein: false)
-    ]
+    @EnvironmentObject private var authManager: AuthManager
+    @Environment(\.modelContext) private var context
 
-    @State private var foodName = ""
-    @State private var caloriesText = ""
-    @State private var servings = 1
-    @State private var protein = 20
-    @State private var isHighProtein = true
+    @State private var meals: [MealModel] = []
 
     private var totalCalories: Int {
-        meals.reduce(0) { $0 + $1.totalCalories }
+        meals.reduce(0) { $0 + ($1.calories * $1.servings) }
     }
 
     private var totalProtein: Int {
-        meals.reduce(0) { $0 + $1.totalProtein }
+        meals.reduce(0) { $0 + ($1.protein * $1.servings) }
     }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 18) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Nutrition dashboard")
-                            .font(.title2)
-                            .fontWeight(.bold)
+            ZStack {
+                LinearGradient(colors: [FitColors.background, Color(red: 0.04, green: 0.09, blue: 0.14)], startPoint: .top, endPoint: .bottom)
+                    .ignoresSafeArea()
 
-                        HStack(spacing: 16) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Calories")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Text("\(totalCalories)")
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Protein")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Text("\(totalProtein)g")
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Text("Nutrition Tracker")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundStyle(.white)
+                        Spacer()
+                        NavigationLink(destination: AddMealView()) {
+                            Text("Add")
+                                .font(.system(size: 14, weight: .bold))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .foregroundStyle(.black)
+                                .background(FitColors.primary)
+                                .clipShape(Capsule())
                         }
                     }
 
-                    VStack(alignment: .leading, spacing: 14) {
-                        Text("Log a meal")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-
-                        VStack(spacing: 12) {
-                            TextField("Food name", text: $foodName)
-                                .padding(12)
-                                .background(Color(.secondarySystemBackground))
-                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-
-                            TextField("Calories", text: $caloriesText)
-                                .keyboardType(.numberPad)
-                                .padding(12)
-                                .background(Color(.secondarySystemBackground))
-                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-
-                            HStack {
-                                Text("Servings")
-                                    .fontWeight(.medium)
-                                Spacer()
-                                Stepper(value: $servings, in: 1...10) {
-                                    Text("\(servings)")
-                                }
-                            }
-                            .padding(.vertical, 4)
-
-                            HStack {
-                                Text("Protein target")
-                                    .fontWeight(.medium)
-                                Spacer()
-                                Stepper(value: $protein, in: 10...100, step: 5) {
-                                    Text("\(protein)g")
-                                }
-                            }
-                            .padding(.vertical, 4)
-
-                            Toggle("High protein", isOn: $isHighProtein)
-                                .tint(.green)
-                        }
-
-                        Button {
-                            guard !foodName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-                            let calories = Int(caloriesText) ?? 0
-                            let newMeal = Meal(
-                                name: foodName,
-                                calories: calories,
-                                protein: protein,
-                                servings: servings,
-                                isHighProtein: isHighProtein
-                            )
-                            meals.insert(newMeal, at: 0)
-                            foodName = ""
-                            caloriesText = ""
-                            servings = 1
-                            protein = 20
-                            isHighProtein = true
-                        } label: {
-                            Text("Add meal")
-                                .fontWeight(.semibold)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(LinearGradient(colors: [.indigo, .blue], startPoint: .leading, endPoint: .trailing))
-                                .foregroundStyle(.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        }
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                        StatCard(title: "Calories", value: "\(totalCalories)", subtitle: "This week", icon: "flame.fill", accent: .orange)
+                        StatCard(title: "Protein", value: "\(totalProtein)g", subtitle: "Goal", icon: "bolt.fill", accent: .green)
                     }
-                    .padding()
-                    .background(Color(.secondarySystemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
 
-                    VStack(alignment: .leading, spacing: 14) {
-                        Text("Recent meals")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-
-                        ForEach(meals) { meal in
-                            HStack(alignment: .center, spacing: 12) {
-                                ZStack {
-                                    Circle()
-                                        .fill(meal.isHighProtein ? Color.green.opacity(0.12) : Color.orange.opacity(0.12))
-                                        .frame(width: 46, height: 46)
-
-                                    Image(systemName: meal.isHighProtein ? "bolt.fill" : "fork.knife")
-                                        .foregroundStyle(meal.isHighProtein ? .green : .orange)
-                                }
-
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(meal.name)
-                                        .font(.headline)
-                                    Text("\(meal.totalCalories) kcal • \(meal.totalProtein)g protein")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                }
-
-                                Spacer()
-
-                                Text(meal.isHighProtein ? "High protein" : "Balanced")
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(meal.isHighProtein ? Color.green.opacity(0.12) : Color.orange.opacity(0.12))
-                                    .foregroundStyle(meal.isHighProtein ? .green : .orange)
-                                    .clipShape(Capsule())
+                    if meals.isEmpty {
+                        FitCard {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("No meals logged yet")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundStyle(.white)
+                                Text("Add your first meal to track calories and protein.")
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(FitColors.textSecondary)
                             }
-                            .padding(12)
-                            .background(Color(.systemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         }
+                    } else {
+                        List {
+                            ForEach(meals.sorted(by: { $0.date > $1.date })) { meal in
+                                HStack(alignment: .center, spacing: 12) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(FitColors.primary.opacity(0.15))
+                                            .frame(width: 42, height: 42)
+                                        Image(systemName: "fork.knife")
+                                            .foregroundStyle(FitColors.primary)
+                                    }
+
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(meal.foodName)
+                                            .font(.system(size: 15, weight: .semibold))
+                                            .foregroundStyle(.white)
+                                        Text("\(meal.calories * meal.servings) kcal • \(meal.protein * meal.servings)g protein")
+                                            .font(.system(size: 12))
+                                            .foregroundStyle(FitColors.textSecondary)
+                                    }
+
+                                    Spacer()
+
+                                    Text(meal.mealCategory)
+                                        .font(.system(size: 11, weight: .semibold))
+                                        .foregroundStyle(FitColors.primary)
+                                }
+                                .padding(.vertical, 6)
+                                .listRowBackground(Color.clear)
+                            }
+                            .onDelete { indexSet in
+                                guard let index = indexSet.first else { return }
+                                let item = meals[index]
+                                context.delete(item)
+                                try? context.save()
+                                loadMeals()
+                            }
+                        }
+                        .scrollContentBackground(.hidden)
                     }
                 }
-                .padding()
+                .padding(20)
             }
-            .navigationTitle("Nutrition")
+            .onAppear { loadMeals() }
         }
+    }
+
+    private func loadMeals() {
+        guard let user = authManager.currentUser else { return }
+        meals = DataManager.meals(for: user, context: context)
     }
 }
 
 #Preview {
     NutritionView()
+        .environmentObject(AuthManager())
 }
