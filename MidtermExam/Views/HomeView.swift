@@ -2,142 +2,145 @@
 import SwiftUI
 
 struct HomeView: View {
+    private let dateTitle: String = {
+        Date().formatted(.dateTime.weekday(.wide).month(.wide).day().year())
+    }()
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    
-                    // Header
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("Welcome Back")
-                                .foregroundStyle(.gray)
-                            
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Welcome back")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+
                             Text("FitTrack")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
+                                .font(.system(size: 34, weight: .bold))
+                                .foregroundStyle(.primary)
                         }
-                        
+
                         Spacer()
-                        
-                        Image(systemName: "figure.run")
-                            .font(.system(size: 40))
+
+                        Circle()
+                            .fill(LinearGradient(colors: [.indigo, .cyan], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .frame(width: 52, height: 52)
+                            .overlay(
+                                Image(systemName: "figure.run")
+                                    .foregroundStyle(.white)
+                                    .font(.title3)
+                            )
                     }
-                    
-                    // Goal Card
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.blue)
-                        
-                        VStack(alignment: .leading, spacing: 10) {
+
+                    Text(dateTitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    ZStack(alignment: .bottomTrailing) {
+                        RoundedRectangle(cornerRadius: 28, style: .continuous)
+                            .fill(LinearGradient(colors: [.indigo, .blue, .cyan], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .frame(height: 200)
+
+                        VStack(alignment: .leading, spacing: 14) {
                             Text("CURRENT GOAL")
                                 .font(.caption)
                                 .foregroundStyle(.white.opacity(0.8))
-                            
+                                .tracking(1.2)
+
                             Text("Build Strength")
-                                .font(.title)
-                                .fontWeight(.bold)
+                                .font(.system(size: 28, weight: .bold))
                                 .foregroundStyle(.white)
-                            
-                            Text("Keep training consistently!")
-                                .foregroundStyle(.white)
-                            
-                            ProgressView(value: 0.65)
+
+                            Text("Stay consistent and keep your weekly momentum strong.")
+                                .font(.subheadline)
+                                .foregroundStyle(.white.opacity(0.9))
+
+                            ProgressView(value: 0.72)
                                 .tint(.white)
+                                .scaleEffect(x: 1, y: 1.2, anchor: .center)
                         }
-                        .padding()
+                        .padding(24)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        CircularProgressRing(progress: 0.72)
+                            .padding(22)
                     }
-                    .frame(height: 170)
-                    
-                    Text("Today's Stats")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    // Stats
-                    HStack {
-                        StatBox(
-                            title: "Workouts",
-                            value: "3",
-                            icon: "dumbbell.fill"
-                        )
-                        
-                        StatBox(
-                            title: "Calories",
-                            value: "1,240",
-                            icon: "flame.fill"
-                        )
-                    }
-                    
-                    HStack {
-                        StatBox(
-                            title: "Protein",
-                            value: "92g",
-                            icon: "bolt.fill"
-                        )
-                        
-                        StatBox(
-                            title: "Progress",
-                            value: "65%",
-                            icon: "chart.bar.fill"
-                        )
-                    }
-                    
-                    Text("Next Workout")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    HStack {
-                        Image(systemName: "figure.strengthtraining.traditional")
-                            .font(.title)
-                        
-                        VStack(alignment: .leading) {
-                            Text("Upper Body")
-                                .fontWeight(.bold)
-                            
-                            Text("Chest • Back • Arms")
-                                .font(.caption)
-                                .foregroundStyle(.gray)
-                        }
-                        
-                        Spacer()
-                        
-                        Text("45 min")
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Today's summary")
+                            .font(.title2)
                             .fontWeight(.bold)
+
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 14) {
+                            StatCard(title: "Workouts", value: "03", subtitle: "This week", icon: "dumbbell.fill", accent: .indigo)
+                            StatCard(title: "Calories", value: "1,240", subtitle: "burned", icon: "flame.fill", accent: .orange)
+                            StatCard(title: "Protein", value: "92g", subtitle: "goal 120g", icon: "bolt.fill", accent: .mint)
+                            StatCard(title: "Progress", value: "72%", subtitle: "on track", icon: "chart.bar.fill", accent: .cyan)
+                        }
                     }
-                    .padding()
-                    .background(Color.gray.opacity(0.15))
-                    .clipShape(RoundedRectangle(cornerRadius: 15))
+
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("Next workout")
+                            .font(.title2)
+                            .fontWeight(.bold)
+
+                        HStack(alignment: .center, spacing: 14) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 18)
+                                    .fill(Color.indigo.opacity(0.12))
+                                    .frame(width: 56, height: 56)
+
+                                Image(systemName: "figure.strengthtraining.traditional")
+                                    .font(.title3)
+                                    .foregroundStyle(.indigo)
+                            }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Upper Body Power")
+                                    .font(.headline)
+                                Text("Chest • Back • Arms")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            Text("45 min")
+                                .font(.headline)
+                                .foregroundStyle(.indigo)
+                        }
+                        .padding(16)
+                        .background(Color(.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    }
                 }
                 .padding()
             }
-            .navigationTitle("Home")
+            .background(Color(.systemBackground))
+            .navigationTitle("Overview")
         }
     }
 }
 
-// Simple Stat Box
-struct StatBox: View {
-    let title: String
-    let value: String
-    let icon: String
-    
+private struct CircularProgressRing: View {
+    let progress: Double
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Image(systemName: icon)
-                .foregroundStyle(.blue)
-            
-            Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
-            
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.gray)
+        ZStack {
+            Circle()
+                .stroke(Color.white.opacity(0.25), lineWidth: 8)
+
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(Color.white, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+
+            Text("72%")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(.white)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color.gray.opacity(0.15))
-        .clipShape(RoundedRectangle(cornerRadius: 15))
+        .frame(width: 78, height: 78)
     }
 }
 
