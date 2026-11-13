@@ -85,12 +85,10 @@ struct WorkoutView: View {
                                     .foregroundStyle(.white)
                             }
                             .padding(16)
-                            .background(Color.white.opacity(0.04))
+                            .background(Color(red: 0.17, green: 0.22, blue: 0.28).opacity(0.92))
                             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
 
-                            Button {
-                                saveWorkout()
-                            } label: {
+                            NavigationLink(destination: AddWorkoutView()) {
                                 Text("Add workout")
                                     .font(.system(size: 24, weight: .bold))
                                     .frame(maxWidth: .infinity)
@@ -114,7 +112,7 @@ struct WorkoutView: View {
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(18)
-                                .background(Color.white.opacity(0.04))
+                                .background(Color(red: 0.17, green: 0.22, blue: 0.28).opacity(0.92))
                                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                             } else {
                                 ForEach(sessions.sorted { $0.date > $1.date }) { session in
@@ -150,7 +148,7 @@ struct WorkoutView: View {
                                         }
                                     }
                                     .padding(14)
-                                    .background(Color.white.opacity(0.04))
+                                    .background(Color(red: 0.17, green: 0.22, blue: 0.28).opacity(0.92))
                                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                                 }
                             }
@@ -212,7 +210,7 @@ private struct WorkoutMetric: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
-        .background(Color.white.opacity(0.04))
+        .background(Color(red: 0.17, green: 0.22, blue: 0.28).opacity(0.92))
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 }

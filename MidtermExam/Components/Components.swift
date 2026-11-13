@@ -17,12 +17,12 @@ struct FitTextField: View {
         .keyboardType(keyboardType)
         .padding(12)
         .frame(maxWidth: .infinity)
-        .background(Color.white.opacity(0.04))
-        .foregroundStyle(.white)
+        .background(Color(red: 0.96, green: 0.97, blue: 0.98).opacity(0.96))
+        .foregroundStyle(.black)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                .stroke(Color.black.opacity(0.08), lineWidth: 1)
         )
     }
 }
@@ -56,11 +56,11 @@ struct FitCard<Content: View>: View {
         content
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.white.opacity(0.04))
+            .background(Color(red: 0.17, green: 0.21, blue: 0.26).opacity(0.84))
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
             )
     }
 }
