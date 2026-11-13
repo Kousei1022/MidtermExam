@@ -85,8 +85,8 @@ struct WorkoutDetailView: View {
 
                     TextField("Notes", text: $notes, axis: .vertical)
                         .padding(12)
-                        .background(Color.white.opacity(0.04))
-                        .foregroundStyle(.white)
+                        .background(Color(red: 0.96, green: 0.97, blue: 0.99).opacity(0.98))
+                        .foregroundStyle(.black)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
                     Toggle("Completed", isOn: $isCompleted)
