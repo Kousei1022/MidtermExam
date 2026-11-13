@@ -24,21 +24,28 @@ struct StatCard: View {
             }
 
             Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
 
             Text(title)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white)
 
             Text(subtitle)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(FitColors.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .padding(14)
+        .frame(minHeight: 150, alignment: .topLeading)
+        .background(FitColors.panel)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(FitColors.border, lineWidth: 1)
+        )
     }
 }
 

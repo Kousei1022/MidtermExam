@@ -4,29 +4,29 @@ import SwiftData
 
 struct WorkoutView: View {
     @EnvironmentObject private var authManager: AuthManager
-    @Environment(\.modelContext) private var context
+    @Query(sort: \WorkoutModel.date, order: .reverse) private var allWorkouts: [WorkoutModel]
+    @State private var selectedFilter = SessionFilter.all
 
-    @State private var workoutType = ""
-    @State private var duration = 0
-    @State private var completed = false
-    @State private var showAlert = false
-    @State private var sessions: [WorkoutModel] = []
+    private var sessions: [WorkoutModel] {
+        guard let user = authManager.currentUser else { return [] }
+        return allWorkouts.filter { $0.user?.id == user.id }
+    }
 
-    private let workoutTypes = [
-        "Upper Body",
-        "Lower Body",
-        "Full Body",
-        "Cardio",
-        "Mobility"
-    ]
+    private var visibleSessions: [WorkoutModel] {
+        switch selectedFilter {
+        case .all: sessions
+        case .planned: sessions.filter { !$0.isCompleted }
+        case .completed: sessions.filter(\.isCompleted)
+        }
+    }
 
     private var totalMinutes: Int {
         sessions.reduce(0) { $0 + $1.duration }
     }
 
-    private var currentWeekCount: Int {
+    private var thisWeeksSessions: [WorkoutModel] {
         let weekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
-        return sessions.filter { $0.date >= weekAgo }.count
+        return sessions.filter { $0.date >= weekAgo }
     }
 
     var body: some View {
@@ -36,120 +36,67 @@ struct WorkoutView: View {
                     .ignoresSafeArea()
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 18) {
-                        Text("Workout")
-                            .font(.system(size: 52, weight: .heavy))
-                            .foregroundStyle(.white)
-
-                        Text("Training plan")
-                            .font(.system(size: 32, weight: .bold))
-                            .foregroundStyle(.white)
-
-                        HStack(spacing: 14) {
-                            WorkoutMetric(value: "\(sessions.count)", label: "Sessions")
-                            WorkoutMetric(value: "\(totalMinutes)", label: "Min")
-                            WorkoutMetric(value: "\(currentWeekCount)d", label: "Streak")
-                        }
-
-                        VStack(alignment: .leading, spacing: 14) {
-                            Text("Create workout")
-                                .font(.system(size: 26, weight: .bold))
-                                .foregroundStyle(.white)
-
-                            VStack(spacing: 12) {
-                                Picker("Workout type", selection: $workoutType) {
-                                    Text("Choose workout").tag("")
-                                    ForEach(workoutTypes, id: \.self) { workout in
-                                        Text(workout)
-                                            .font(.system(size: 16))
-                                            .tag(workout)
-                                    }
-                                }
-                                .pickerStyle(.segmented)
-                                .tint(FitColors.primary)
-
-                                HStack {
-                                    Text("Duration")
-                                        .font(.system(size: 18, weight: .medium))
-                                        .foregroundStyle(.white)
-                                    Spacer()
-                                    Stepper(value: $duration, in: 15...120, step: 15) {
-                                        Text("\(duration) min")
-                                            .font(.system(size: 18, weight: .medium))
-                                            .foregroundStyle(.white)
-                                    }
-                                }
-
-                                Toggle("Mark as completed", isOn: $completed)
-                                    .tint(FitColors.primary)
-                                    .foregroundStyle(.white)
-                            }
-                            .padding(16)
-                            .background(Color(red: 0.17, green: 0.22, blue: 0.28).opacity(0.92))
-                            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-
-                            NavigationLink(destination: AddWorkoutView()) {
-                                Text("Add workout")
-                                    .font(.system(size: 24, weight: .bold))
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 18)
-                                    .foregroundStyle(.white)
-                                    .background(LinearGradient(colors: [Color(red: 0.52, green: 0.39, blue: 0.94), Color(red: 0.75, green: 0.46, blue: 0.90)], startPoint: .leading, endPoint: .trailing))
-                                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            }
-                        }
-
-                        VStack(alignment: .leading, spacing: 14) {
-                            Text("Upcoming sessions")
+                    VStack(alignment: .leading, spacing: 20) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("TRAINING")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(FitColors.primary)
+                            Text("Workout log")
                                 .font(.system(size: 30, weight: .bold))
                                 .foregroundStyle(.white)
+                        }
 
-                            if sessions.isEmpty {
-                                HStack {
-                                    Text("No workouts logged yet")
-                                        .font(.system(size: 16))
+                        NavigationLink(destination: AddWorkoutView()) {
+                            Label("Log a workout", systemImage: "plus")
+                                .font(.system(size: 15, weight: .bold))
+                                .frame(maxWidth: .infinity, minHeight: 50)
+                                .foregroundStyle(.black)
+                                .background(FitColors.primary)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        }
+
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                            StatCard(title: "Sessions", value: "\(sessions.count)", subtitle: "All time", icon: "dumbbell.fill", accent: FitColors.primary)
+                            StatCard(title: "This week", value: "\(thisWeeksSessions.count)", subtitle: "Last 7 days", icon: "calendar", accent: FitColors.secondary)
+                            StatCard(title: "Training time", value: "\(totalMinutes)", subtitle: "Minutes · all time", icon: "clock.fill", accent: .orange)
+                            StatCard(title: "Completed", value: "\(sessions.filter(\.isCompleted).count)", subtitle: "Sessions", icon: "checkmark.circle.fill", accent: FitColors.success)
+                        }
+
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Your sessions")
+                                .font(.system(size: 19, weight: .bold))
+                                .foregroundStyle(.white)
+
+                            Picker("Filter sessions", selection: $selectedFilter) {
+                                ForEach(SessionFilter.allCases) { filter in
+                                    Text(filter.title).tag(filter)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .tint(FitColors.primary)
+                        }
+
+                        if visibleSessions.isEmpty {
+                            FitCard {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Image(systemName: selectedFilter == .all ? "figure.strengthtraining.traditional" : "line.3.horizontal.decrease.circle")
+                                        .font(.system(size: 22, weight: .semibold))
+                                        .foregroundStyle(FitColors.primary)
+                                    Text(selectedFilter == .all ? "No workouts logged yet" : "No matching sessions")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundStyle(.white)
+                                    Text(selectedFilter == .all ? "Start a session and your training history will build here." : "Try another filter to see more of your training log.")
+                                        .font(.system(size: 13))
                                         .foregroundStyle(FitColors.textSecondary)
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(18)
-                                .background(Color(red: 0.17, green: 0.22, blue: 0.28).opacity(0.92))
-                                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                            } else {
-                                ForEach(sessions.sorted { $0.date > $1.date }) { session in
-                                    HStack(alignment: .center, spacing: 12) {
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .fill(session.isCompleted ? Color.green.opacity(0.15) : Color.white.opacity(0.08))
-                                                .frame(width: 52, height: 52)
-
-                                            Image(systemName: session.isCompleted ? "checkmark.circle.fill" : "figure.strengthtraining.traditional")
-                                                .font(.system(size: 22))
-                                                .foregroundStyle(session.isCompleted ? .green : FitColors.primary)
-                                        }
-
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(session.workoutName)
-                                                .font(.system(size: 22, weight: .bold))
-                                                .foregroundStyle(.white)
-                                            Text("\(session.workoutType) • \(session.sets) sets")
-                                                .font(.system(size: 16))
-                                                .foregroundStyle(FitColors.textSecondary)
-                                        }
-
-                                        Spacer()
-
-                                        VStack(alignment: .trailing, spacing: 4) {
-                                            Text("\(session.duration) min")
-                                                .font(.system(size: 17, weight: .semibold))
-                                                .foregroundStyle(.white)
-                                            Text(session.isCompleted ? "Done" : "Planned")
-                                                .font(.system(size: 13, weight: .semibold))
-                                                .foregroundStyle(session.isCompleted ? .green : FitColors.primary)
-                                        }
+                            }
+                        } else {
+                            LazyVStack(spacing: 10) {
+                                ForEach(visibleSessions) { session in
+                                    NavigationLink(destination: WorkoutDetailView(workout: session)) {
+                                        WorkoutSessionRow(session: session)
                                     }
-                                    .padding(14)
-                                    .background(Color(red: 0.17, green: 0.22, blue: 0.28).opacity(0.92))
-                                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                    .buttonStyle(.plain)
                                 }
                             }
                         }
@@ -157,61 +104,60 @@ struct WorkoutView: View {
                     .padding(20)
                 }
             }
-            .onAppear(perform: loadWorkouts)
-            .alert("Workout saved", isPresented: $showAlert) {
-                Button("Done") { }
-            } message: {
-                Text("\(workoutType) • \(duration) minutes")
-            }
         }
-    }
-
-    private func loadWorkouts() {
-        guard let user = authManager.currentUser else { return }
-        sessions = DataManager.workouts(for: user, context: context).sorted { $0.date > $1.date }
-    }
-
-    private func saveWorkout() {
-        guard let user = authManager.currentUser else { return }
-        let selectedType = workoutType.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !selectedType.isEmpty, duration > 0 else { return }
-
-        let workout = WorkoutModel(
-            user: user,
-            workoutName: selectedType,
-            workoutType: selectedType,
-            date: Date(),
-            duration: duration,
-            sets: 3,
-            repetitions: 10,
-            notes: "",
-            isCompleted: completed
-        )
-
-        context.insert(workout)
-        try? context.save()
-        loadWorkouts()
-        showAlert = true
     }
 }
 
-private struct WorkoutMetric: View {
-    let value: String
-    let label: String
+private enum SessionFilter: String, CaseIterable, Identifiable {
+    case all
+    case planned
+    case completed
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .all: "All"
+        case .planned: "Planned"
+        case .completed: "Done"
+        }
+    }
+}
+
+private struct WorkoutSessionRow: View {
+    let session: WorkoutModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(value)
-                .font(.system(size: 36, weight: .bold))
-                .foregroundStyle(.white)
-            Text(label)
-                .font(.system(size: 18, weight: .regular))
-                .foregroundStyle(FitColors.textSecondary)
+        FitCard {
+            HStack(spacing: 12) {
+                Image(systemName: session.isCompleted ? "checkmark.circle.fill" : "figure.strengthtraining.traditional")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(session.isCompleted ? FitColors.success : FitColors.primary)
+                    .frame(width: 42, height: 42)
+                    .background(FitColors.panelAlt)
+                    .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(session.workoutName)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                    Text("\(session.workoutType) · \(session.sets) sets · \(session.date.formatted(.dateTime.month(.abbreviated).day()))")
+                        .font(.system(size: 12))
+                        .foregroundStyle(FitColors.textSecondary)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 4)
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("\(session.duration) min")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.white)
+                    Text(session.isCompleted ? "Done" : "Planned")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(session.isCompleted ? FitColors.success : FitColors.primary)
+                }
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
-        .background(Color(red: 0.17, green: 0.22, blue: 0.28).opacity(0.92))
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 }
 

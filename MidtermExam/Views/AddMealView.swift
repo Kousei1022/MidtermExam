@@ -23,41 +23,101 @@ struct AddMealView: View {
                 .ignoresSafeArea()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 18) {
                     Text("Add Meal")
-                        .font(.system(size: 26, weight: .bold))
+                        .font(.system(size: 28, weight: .bold))
                         .foregroundStyle(.white)
 
-                    FitTextField(title: "Food name", text: $foodName)
-                    FitTextField(title: "Calories", text: $calories, keyboardType: .numberPad)
-                    FitTextField(title: "Protein (g)", text: $protein, keyboardType: .numberPad)
-                    FitTextField(title: "Carbohydrates (g)", text: $carbohydrates, keyboardType: .numberPad)
-                    FitTextField(title: "Fat (g)", text: $fat, keyboardType: .numberPad)
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("FOOD DETAILS")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(FitColors.primary)
 
-                    Picker("Meal category", selection: $mealCategory) {
-                        Text("Choose category").tag("")
-                        ForEach(categories, id: \ .self) {
-                            Text($0).tag($0)
+                        FitTextField(title: "Food name", text: $foodName)
+
+                        VStack(alignment: .leading, spacing: 9) {
+                            Text("Meal category")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(.white.opacity(0.85))
+
+                            Menu {
+                                ForEach(categories, id: \.self) { category in
+                                    Button {
+                                        mealCategory = category
+                                    } label: {
+                                        if mealCategory == category {
+                                            Label(category, systemImage: "checkmark")
+                                        } else {
+                                            Text(category)
+                                        }
+                                    }
+                                }
+                            } label: {
+                                HStack {
+                                    Image(systemName: "fork.knife")
+                                        .foregroundStyle(FitColors.background)
+                                    Text(mealCategory.isEmpty ? "Choose category" : mealCategory)
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .foregroundStyle(.black)
+                                    Spacer()
+                                    Image(systemName: "chevron.down")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundStyle(.black.opacity(0.65))
+                                }
+                                .padding(.horizontal, 14)
+                                .frame(maxWidth: .infinity, minHeight: 48)
+                                .background(Color(red: 0.96, green: 0.97, blue: 0.99))
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            }
                         }
-                    }
-                    .pickerStyle(.segmented)
 
-                    DatePicker("Date", selection: $date, displayedComponents: [.date])
-                        .tint(FitColors.primary)
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("NUTRITION FACTS")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(FitColors.primary)
 
-                    HStack {
-                        Text("Servings")
-                            .foregroundStyle(.white)
-                        Spacer()
-                        Stepper(value: $servings, in: 1...10) {
-                            Text("\(servings)")
+                            FitTextField(title: "Calories", text: $calories, keyboardType: .numberPad)
+
+                            HStack(spacing: 10) {
+                                FitTextField(title: "Protein (g)", text: $protein, keyboardType: .numberPad)
+                                FitTextField(title: "Carbs (g)", text: $carbohydrates, keyboardType: .numberPad)
+                            }
+                            FitTextField(title: "Fat (g)", text: $fat, keyboardType: .numberPad)
+                        }
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("MEAL DETAILS")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(FitColors.primary)
+
+                            DatePicker("Date", selection: $date, displayedComponents: [.date])
+                                .tint(FitColors.primary)
                                 .foregroundStyle(.white)
+
+                            HStack {
+                                Text("Servings")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundStyle(.white.opacity(0.9))
+                                Spacer()
+                                Stepper(value: $servings, in: 1...10) {
+                                    Text("\(servings)")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundStyle(.white)
+                                }
+                            }
+                        }
+
+                        FitButton(title: "Save meal") {
+                            saveMeal()
                         }
                     }
-
-                    FitButton(title: "Save meal") {
-                        saveMeal()
-                    }
+                    .padding(18)
+                    .background(Color(red: 0.18, green: 0.22, blue: 0.28).opacity(0.92))
+                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                    )
                 }
                 .padding(20)
             }
