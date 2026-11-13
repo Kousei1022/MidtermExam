@@ -12,7 +12,7 @@ struct AddMealView: View {
     @State private var carbohydrates = ""
     @State private var fat = ""
     @State private var servings = 1
-    @State private var mealCategory = "Breakfast"
+    @State private var mealCategory = ""
     @State private var date = Date()
 
     private let categories = ["Breakfast", "Lunch", "Dinner", "Snack"]
@@ -35,8 +35,9 @@ struct AddMealView: View {
                     FitTextField(title: "Fat (g)", text: $fat, keyboardType: .numberPad)
 
                     Picker("Meal category", selection: $mealCategory) {
+                        Text("Choose category").tag("")
                         ForEach(categories, id: \ .self) {
-                            Text($0)
+                            Text($0).tag($0)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -65,15 +66,18 @@ struct AddMealView: View {
 
     private func saveMeal() {
         guard let user = authManager.currentUser else { return }
+        let category = mealCategory.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !foodName.isEmpty, !category.isEmpty else { return }
+
         let meal = MealModel(
             user: user,
-            foodName: foodName.isEmpty ? "Untitled Meal" : foodName,
+            foodName: foodName,
             calories: Int(calories) ?? 0,
             protein: Int(protein) ?? 0,
             carbohydrates: Int(carbohydrates) ?? 0,
             fat: Int(fat) ?? 0,
-            servings: servings,
-            mealCategory: mealCategory,
+            servings: max(1, servings),
+            mealCategory: category,
             date: date
         )
         context.insert(meal)

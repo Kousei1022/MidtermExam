@@ -7,10 +7,10 @@ struct AddWorkoutView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var workoutName = ""
-    @State private var workoutType = "Upper Body"
-    @State private var duration = 30
-    @State private var sets = 3
-    @State private var repetitions = 10
+    @State private var workoutType = ""
+    @State private var duration = 0
+    @State private var sets = 0
+    @State private var repetitions = 0
     @State private var date = Date()
     @State private var notes = ""
     @State private var isCompleted = false
@@ -31,6 +31,7 @@ struct AddWorkoutView: View {
                     FitTextField(title: "Workout name", text: $workoutName)
 
                     Picker("Workout type", selection: $workoutType) {
+                        Text("Choose workout").tag("")
                         ForEach(types, id: \ .self) { type in
                             Text(type).tag(type)
                         }
@@ -92,14 +93,17 @@ struct AddWorkoutView: View {
 
     private func saveWorkout() {
         guard let user = authManager.currentUser else { return }
+        let selectedType = workoutType.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !selectedType.isEmpty, duration > 0 else { return }
+
         let workout = WorkoutModel(
             user: user,
-            workoutName: workoutName.isEmpty ? "Custom Session" : workoutName,
-            workoutType: workoutType,
+            workoutName: workoutName.isEmpty ? selectedType : workoutName,
+            workoutType: selectedType,
             date: date,
             duration: duration,
-            sets: sets,
-            repetitions: repetitions,
+            sets: max(1, sets),
+            repetitions: max(1, repetitions),
             notes: notes,
             isCompleted: isCompleted
         )
