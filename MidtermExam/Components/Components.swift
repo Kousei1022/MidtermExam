@@ -27,6 +27,51 @@ struct FitTextField: View {
     }
 }
 
+struct WorkoutTypePicker: View {
+    let types: [String]
+    @Binding var selection: String
+    var placeholder: String = "Choose workout"
+
+    var body: some View {
+        Menu {
+            ForEach(types, id: \.self) { type in
+                Button {
+                    selection = type
+                } label: {
+                    if selection == type {
+                        Label(type, systemImage: "checkmark")
+                    } else {
+                        Text(type)
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "figure.strengthtraining.traditional")
+                    .foregroundStyle(FitColors.background)
+                Text(selection.isEmpty ? placeholder : selection)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.black)
+                    .lineLimit(1)
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(.black.opacity(0.65))
+            }
+            .padding(.horizontal, 14)
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(Color(red: 0.96, green: 0.97, blue: 0.99))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.black.opacity(0.10), lineWidth: 1)
+            )
+            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .accessibilityLabel("Workout type")
+    }
+}
+
 struct FitButton: View {
     let title: String
     let action: () -> Void

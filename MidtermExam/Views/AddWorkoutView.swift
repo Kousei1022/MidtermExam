@@ -36,14 +36,7 @@ struct AddWorkoutView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(.white.opacity(0.85))
 
-                            Picker("Workout type", selection: $workoutType) {
-                                Text("Choose workout").tag("")
-                                ForEach(types, id: \ .self) { type in
-                                    Text(type).tag(type)
-                                }
-                            }
-                            .pickerStyle(.segmented)
-                            .tint(FitColors.primary)
+                            WorkoutTypePicker(types: types, selection: $workoutType)
                         }
 
                         VStack(alignment: .leading, spacing: 8) {

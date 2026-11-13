@@ -8,4 +8,3 @@ struct WorkoutSession: Identifiable {
     let intensity: String
     let completed: Bool
 }
-

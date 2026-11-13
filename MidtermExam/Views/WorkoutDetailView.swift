@@ -43,12 +43,7 @@ struct WorkoutDetailView: View {
 
                     FitTextField(title: "Workout name", text: $workoutName)
 
-                    Picker("Workout type", selection: $workoutType) {
-                        ForEach(types, id: \ .self) { type in
-                            Text(type).tag(type)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                    WorkoutTypePicker(types: types, selection: $workoutType)
 
                     DatePicker("Workout date", selection: $date, displayedComponents: [.date])
                         .tint(FitColors.primary)
