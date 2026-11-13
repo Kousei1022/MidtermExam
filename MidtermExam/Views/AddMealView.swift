@@ -128,6 +128,11 @@ struct AddMealView: View {
         )
         context.insert(meal)
         try? context.save()
+        if let uid = user.firebaseUID {
+            Task {
+                try? await FirebaseDataStore.shared.saveMeal(meal, uid: uid)
+            }
+        }
         dismiss()
     }
 }

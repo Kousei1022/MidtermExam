@@ -10,6 +10,7 @@ struct LoginView: View {
     @State private var rememberMe = true
     @State private var errorMessage: String?
     @State private var isAuthenticated = false
+    @State private var isSigningIn = false
 
     var body: some View {
         ZStack {
@@ -31,7 +32,7 @@ struct LoginView: View {
                         .foregroundStyle(FitColors.textSecondary)
 
                     VStack(spacing: 14) {
-                        FitTextField(title: "Email or username", text: $emailOrUsername)
+                        FitTextField(title: "Email", text: $emailOrUsername, keyboardType: .emailAddress)
                         HStack {
                             if isPasswordVisible {
                                 TextField("Password", text: $password)
@@ -69,9 +70,10 @@ struct LoginView: View {
                                 .foregroundStyle(FitColors.danger)
                         }
 
-                        FitButton(title: "Log In") {
-                            handleLogin()
+                        FitButton(title: isSigningIn ? "Signing in..." : "Log In") {
+                            Task { await handleLogin() }
                         }
+                        .disabled(isSigningIn)
 
                         NavigationLink(destination: RegisterView()) {
                             Text("Create account")
@@ -97,8 +99,12 @@ struct LoginView: View {
         }
     }
 
-    private func handleLogin() {
-        let result = authManager.login(emailOrUsername: emailOrUsername, password: password)
+    private func handleLogin() async {
+        guard !isSigningIn else { return }
+        isSigningIn = true
+        defer { isSigningIn = false }
+
+        let result = await authManager.login(emailOrUsername: emailOrUsername, password: password)
         if let result {
             errorMessage = result
             isAuthenticated = false

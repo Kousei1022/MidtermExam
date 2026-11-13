@@ -5,6 +5,8 @@ struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
     @Environment(\.modelContext) private var context
     @Query(sort: \WorkoutModel.date, order: .reverse) private var allWorkouts: [WorkoutModel]
+    @State private var deleteAccountError: String?
+    @State private var isShowingDeleteSheet = false
 
     private var user: UserModel? {
         authManager.currentUser
@@ -142,7 +144,7 @@ struct ProfileView: View {
                                 ProfileRow(label: "Log out")
                             }
                             Button {
-                                authManager.deleteCurrentUser()
+                                isShowingDeleteSheet = true
                             } label: {
                                 ProfileRow(label: "Delete account", destructive: true)
                             }
@@ -154,6 +156,87 @@ struct ProfileView: View {
                 }
                 .padding(20)
             }
+        }
+        .alert("Unable to delete account", isPresented: Binding(
+            get: { deleteAccountError != nil },
+            set: { if !$0 { deleteAccountError = nil } }
+        )) {
+            Button("OK", role: .cancel) { deleteAccountError = nil }
+        } message: {
+            Text(deleteAccountError ?? "Please try again.")
+        }
+        .sheet(isPresented: $isShowingDeleteSheet) {
+            DeleteAccountSheet { password in
+                let result = await authManager.deleteCurrentUser(password: password)
+                if let result {
+                    deleteAccountError = result
+                }
+                return result
+            }
+            .presentationDetents([.medium])
+        }
+    }
+}
+
+private struct DeleteAccountSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var password = ""
+    @State private var errorMessage: String?
+    @State private var isDeleting = false
+
+    let onDelete: (String) async -> String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Delete account")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(.white)
+            Text("This permanently removes your profile and saved fitness data. Confirm your password to continue.")
+                .font(.system(size: 14))
+                .foregroundStyle(FitColors.textSecondary)
+
+            SecureField("Password", text: $password)
+                .padding(12)
+                .background(Color(red: 0.96, green: 0.97, blue: 0.99))
+                .foregroundStyle(.black)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+            if let errorMessage {
+                Text(errorMessage)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(FitColors.danger)
+            }
+
+            HStack(spacing: 10) {
+                Button("Cancel") { dismiss() }
+                    .frame(maxWidth: .infinity, minHeight: 46)
+                    .foregroundStyle(.white)
+                    .background(FitColors.panelAlt)
+                    .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
+
+                Button(isDeleting ? "Deleting..." : "Delete account", role: .destructive) {
+                    Task { await deleteAccount() }
+                }
+                .disabled(isDeleting || password.isEmpty)
+                .frame(maxWidth: .infinity, minHeight: 46)
+                .foregroundStyle(.white)
+                .background(FitColors.danger)
+                .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
+            }
+        }
+        .padding(22)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(FitColors.background.ignoresSafeArea())
+    }
+
+    private func deleteAccount() async {
+        guard !isDeleting else { return }
+        isDeleting = true
+        defer { isDeleting = false }
+        if let message = await onDelete(password) {
+            errorMessage = message
+        } else {
+            dismiss()
         }
     }
 }

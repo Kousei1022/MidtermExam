@@ -192,6 +192,11 @@ struct NutritionView: View {
             .alert("Delete this meal?", isPresented: $showDeleteConfirmation) {
                 Button("Delete", role: .destructive) {
                     if let mealToDelete {
+                        if let uid = authManager.currentUser?.firebaseUID {
+                            Task {
+                                try? await FirebaseDataStore.shared.deleteMeal(id: mealToDelete.id, uid: uid)
+                            }
+                        }
                         context.delete(mealToDelete)
                         try? context.save()
                     }

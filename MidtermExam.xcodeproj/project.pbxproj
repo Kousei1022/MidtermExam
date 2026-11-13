@@ -10,6 +10,12 @@
 		83D697523046E9BF0040BE66 /* MidtermExam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MidtermExam.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXBuildFile section */
+		A10000000000000000000001 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000011 /* FirebaseCore */; };
+		A10000000000000000000002 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000012 /* FirebaseAuth */; };
+		A10000000000000000000003 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000013 /* FirebaseFirestore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		83D697543046E9BF0040BE66 /* MidtermExam */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -23,6 +29,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000001 /* FirebaseCore in Frameworks */,
+				A10000000000000000000002 /* FirebaseAuth in Frameworks */,
+				A10000000000000000000003 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +74,9 @@
 			);
 			name = MidtermExam;
 			packageProductDependencies = (
+				A10000000000000000000011 /* FirebaseCore */,
+				A10000000000000000000012 /* FirebaseAuth */,
+				A10000000000000000000013 /* FirebaseFirestore */,
 			);
 			productName = MidtermExam;
 			productReference = 83D697523046E9BF0040BE66 /* MidtermExam.app */;
@@ -98,6 +110,9 @@
 			productRefGroup = 83D697533046E9BF0040BE66 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
+			packageReferences = (
+				A10000000000000000000021 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			targets = (
 				83D697513046E9BF0040BE66 /* MidtermExam */,
 			);
@@ -307,6 +322,35 @@
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A10000000000000000000021 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A10000000000000000000011 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000000000000000000021 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		A10000000000000000000012 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000000000000000000021 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		A10000000000000000000013 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000000000000000000021 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCConfigurationList section */
 		83D6974D3046E9BF0040BE66 /* Build configuration list for PBXProject "MidtermExam" */ = {

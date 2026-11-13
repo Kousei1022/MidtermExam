@@ -8,6 +8,7 @@ final class UserModel {
     var username: String
     var email: String
     var passwordHash: String
+    var firebaseUID: String?
     var height: Double
     var weight: Double
     var fitnessGoal: String
@@ -29,6 +30,7 @@ final class UserModel {
         username: String,
         email: String,
         passwordHash: String,
+        firebaseUID: String? = nil,
         height: Double = 0,
         weight: Double = 0,
         fitnessGoal: String = "Build Muscle",
@@ -40,6 +42,7 @@ final class UserModel {
         self.username = username
         self.email = email.lowercased()
         self.passwordHash = passwordHash
+        self.firebaseUID = firebaseUID
         self.height = height
         self.weight = weight
         self.fitnessGoal = fitnessGoal

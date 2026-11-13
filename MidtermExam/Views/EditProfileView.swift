@@ -3,7 +3,6 @@ import SwiftData
 
 struct EditProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
-    @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
     @State private var fullName: String
@@ -11,6 +10,8 @@ struct EditProfileView: View {
     @State private var height: String
     @State private var weight: String
     @State private var fitnessGoal: String
+    @State private var isSaving = false
+    @State private var errorMessage: String?
 
     init(user: UserModel) {
         _fullName = State(initialValue: user.fullName)
@@ -27,40 +28,87 @@ struct EditProfileView: View {
             LinearGradient(colors: [FitColors.background, Color(red: 0.05, green: 0.08, blue: 0.14)], startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea()
 
-            VStack(spacing: 18) {
-                Text("Edit Profile")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundStyle(.white)
-
-                FitTextField(title: "Full name", text: $fullName)
-                FitTextField(title: "Email", text: $email, keyboardType: .emailAddress)
-                FitTextField(title: "Height (cm)", text: $height, keyboardType: .decimalPad)
-                FitTextField(title: "Weight (kg)", text: $weight, keyboardType: .decimalPad)
-
-                Picker("Fitness goal", selection: $fitnessGoal) {
-                    ForEach(goals, id: \ .self) { goal in
-                        Text(goal).tag(goal)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("YOUR PROFILE")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(FitColors.primary)
+                        Text("Edit profile")
+                            .font(.system(size: 30, weight: .bold))
+                            .foregroundStyle(.white)
                     }
-                }
-                .pickerStyle(.segmented)
 
-                FitButton(title: "Save changes") {
-                    saveChanges()
+                    FitFormSection(title: "Personal details", icon: "person.fill") {
+                        FitTextField(title: "Full name", text: $fullName)
+                        FitTextField(title: "Email", text: $email, keyboardType: .emailAddress)
+                    }
+
+                    FitFormSection(title: "Body metrics", icon: "scalemass.fill") {
+                        FitTextField(title: "Height (cm)", text: $height, keyboardType: .decimalPad)
+                        FitTextField(title: "Weight (kg)", text: $weight, keyboardType: .decimalPad)
+                    }
+
+                    FitFormSection(title: "Fitness goal", icon: "scope") {
+                        Menu {
+                            ForEach(goals, id: \.self) { goal in
+                                Button {
+                                    fitnessGoal = goal
+                                } label: {
+                                    if fitnessGoal == goal {
+                                        Label(goal, systemImage: "checkmark")
+                                    } else {
+                                        Text(goal)
+                                    }
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Text(fitnessGoal)
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundStyle(.black)
+                                Spacer()
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(.black.opacity(0.65))
+                            }
+                            .padding(.horizontal, 14)
+                            .frame(maxWidth: .infinity, minHeight: 48)
+                            .background(Color(red: 0.96, green: 0.97, blue: 0.99))
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        }
+                    }
+
+                    if let errorMessage {
+                        Text(errorMessage)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(FitColors.danger)
+                    }
+
+                    FitButton(title: isSaving ? "Saving..." : "Save changes") {
+                        Task { await saveChanges() }
+                    }
+                    .disabled(isSaving)
                 }
+                .padding(20)
             }
-            .padding(20)
         }
     }
 
-    private func saveChanges() {
-        guard let user = authManager.currentUser else { return }
-        user.fullName = fullName
-        user.email = email.lowercased()
-        user.height = Double(height) ?? user.height
-        user.weight = Double(weight) ?? user.weight
-        user.fitnessGoal = fitnessGoal
-        try? context.save()
-        dismiss()
+    private func saveChanges() async {
+        guard !isSaving else { return }
+        isSaving = true
+        defer { isSaving = false }
+        errorMessage = await authManager.updateProfile(
+            fullName: fullName,
+            email: email,
+            height: Double(height),
+            weight: Double(weight),
+            fitnessGoal: fitnessGoal
+        )
+        if errorMessage == nil {
+            dismiss()
+        }
     }
 }
 

@@ -12,6 +12,7 @@ struct RegisterView: View {
     @State private var confirmPassword = ""
     @State private var errorMessage: String?
     @State private var isRegistered = false
+    @State private var isRegistering = false
 
     var body: some View {
         ZStack {
@@ -45,9 +46,10 @@ struct RegisterView: View {
                                 .foregroundStyle(FitColors.danger)
                         }
 
-                        FitButton(title: "Create account") {
-                            handleRegister()
+                        FitButton(title: isRegistering ? "Creating account..." : "Create account") {
+                            Task { await handleRegister() }
                         }
+                        .disabled(isRegistering)
                     }
                 }
                 .padding(20)
@@ -62,8 +64,12 @@ struct RegisterView: View {
         }
     }
 
-    private func handleRegister() {
-        let result = authManager.register(
+    private func handleRegister() async {
+        guard !isRegistering else { return }
+        isRegistering = true
+        defer { isRegistering = false }
+
+        let result = await authManager.register(
             fullName: fullName,
             username: username,
             email: email,
