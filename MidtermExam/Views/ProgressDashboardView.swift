@@ -82,7 +82,7 @@ struct ProgressDashboardView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(colors: [FitColors.background, Color(red: 0.05, green: 0.09, blue: 0.15)], startPoint: .top, endPoint: .bottom)
+                LinearGradient(colors: [FitColors.background, FitColors.backgroundSecondary], startPoint: .topLeading, endPoint: .bottomTrailing)
                     .ignoresSafeArea()
 
                 ScrollView {
@@ -92,7 +92,7 @@ struct ProgressDashboardView: View {
                                 .font(.system(size: 11, weight: .bold))
                                 .foregroundStyle(FitColors.primary)
                             Text("Progress")
-                                .font(.system(size: 30, weight: .bold))
+                                .font(.system(size: 30, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
                         }
 

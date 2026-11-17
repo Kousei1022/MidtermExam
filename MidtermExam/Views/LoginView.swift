@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import FirebaseAuth
 
 struct LoginView: View {
     @EnvironmentObject private var authManager: AuthManager
@@ -9,8 +10,10 @@ struct LoginView: View {
     @State private var isPasswordVisible = false
     @State private var rememberMe = true
     @State private var errorMessage: String?
+    @State private var resetMessage: String?
     @State private var isAuthenticated = false
     @State private var isSigningIn = false
+    @State private var isSendingReset = false
 
     var body: some View {
         ZStack {
@@ -74,8 +77,10 @@ struct LoginView: View {
                                 .toggleStyle(.switch)
                                 .tint(FitColors.primary)
                             Spacer()
-                            Button("Forgot password?") {
+                            Button(isSendingReset ? "Sending..." : "Forgot password?") {
+                                Task { await handleForgotPassword() }
                             }
+                            .disabled(isSendingReset)
                             .foregroundStyle(FitColors.primary)
                         }
 
@@ -83,6 +88,12 @@ struct LoginView: View {
                             Text(errorMessage)
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundStyle(FitColors.danger)
+                        }
+
+                        if let resetMessage {
+                            Text(resetMessage)
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(FitColors.primary)
                         }
 
                         FitButton(title: isSigningIn ? "Signing in..." : "Log In") {
@@ -126,10 +137,34 @@ struct LoginView: View {
         let result = await authManager.login(emailOrUsername: emailOrUsername, password: password)
         if let result {
             errorMessage = result
+            resetMessage = nil
             isAuthenticated = false
         } else {
             errorMessage = nil
+            resetMessage = nil
             isAuthenticated = true
+        }
+    }
+
+    private func handleForgotPassword() async {
+        guard !isSendingReset else { return }
+        let email = emailOrUsername.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !email.isEmpty, email.contains("@") else {
+            resetMessage = nil
+            errorMessage = "Enter your email address to reset your password."
+            return
+        }
+
+        isSendingReset = true
+        defer { isSendingReset = false }
+
+        do {
+            try await Auth.auth().sendPasswordReset(withEmail: email)
+            errorMessage = nil
+            resetMessage = "Password reset email sent. Check your inbox."
+        } catch {
+            errorMessage = "Unable to send reset email: \(error.localizedDescription)"
+            resetMessage = nil
         }
     }
 }

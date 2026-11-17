@@ -6,15 +6,15 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXFileReference section */
-		83D697523046E9BF0040BE66 /* MidtermExam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MidtermExam.app; sourceTree = BUILT_PRODUCTS_DIR; };
-/* End PBXFileReference section */
-
 /* Begin PBXBuildFile section */
 		A10000000000000000000001 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000011 /* FirebaseCore */; };
 		A10000000000000000000002 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000012 /* FirebaseAuth */; };
 		A10000000000000000000003 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000013 /* FirebaseFirestore */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		83D697523046E9BF0040BE66 /* MidtermExam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MidtermExam.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		83D697543046E9BF0040BE66 /* MidtermExam */ = {
@@ -106,13 +106,13 @@
 			);
 			mainGroup = 83D697493046E9BF0040BE66;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A10000000000000000000021 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 83D697533046E9BF0040BE66 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
-			packageReferences = (
-				A10000000000000000000021 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-			);
 			targets = (
 				83D697513046E9BF0040BE66 /* MidtermExam */,
 			);
@@ -323,6 +323,27 @@
 		};
 /* End XCBuildConfiguration section */
 
+/* Begin XCConfigurationList section */
+		83D6974D3046E9BF0040BE66 /* Build configuration list for PBXProject "MidtermExam" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				83D6975B3046E9C00040BE66 /* Debug */,
+				83D6975C3046E9C00040BE66 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		83D6975D3046E9C00040BE66 /* Build configuration list for PBXNativeTarget "MidtermExam" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				83D6975E3046E9C00040BE66 /* Debug */,
+				83D6975F3046E9C00040BE66 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		A10000000000000000000021 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -351,27 +372,6 @@
 			productName = FirebaseFirestore;
 		};
 /* End XCSwiftPackageProductDependency section */
-
-/* Begin XCConfigurationList section */
-		83D6974D3046E9BF0040BE66 /* Build configuration list for PBXProject "MidtermExam" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				83D6975B3046E9C00040BE66 /* Debug */,
-				83D6975C3046E9C00040BE66 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		83D6975D3046E9C00040BE66 /* Build configuration list for PBXNativeTarget "MidtermExam" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				83D6975E3046E9C00040BE66 /* Debug */,
-				83D6975F3046E9C00040BE66 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-/* End XCConfigurationList section */
 	};
 	rootObject = 83D6974A3046E9BF0040BE66 /* Project object */;
 }

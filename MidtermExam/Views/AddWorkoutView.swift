@@ -14,6 +14,7 @@ struct AddWorkoutView: View {
     @State private var date = Date()
     @State private var notes = ""
     @State private var isCompleted = false
+    @State private var validationMessage: String?
 
     private let types = ["Upper Body", "Lower Body", "Push", "Pull", "Legs", "Cardio", "Full Body"]
 
@@ -86,6 +87,12 @@ struct AddWorkoutView: View {
                             )
                     }
 
+                    if let validationMessage {
+                        Text(validationMessage)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(FitColors.danger)
+                    }
+
                     FitButton(title: "Save workout") {
                         saveWorkout()
                     }
@@ -98,9 +105,23 @@ struct AddWorkoutView: View {
     }
 
     private func saveWorkout() {
-        guard let user = authManager.currentUser else { return }
+        guard let user = authManager.currentUser else {
+            validationMessage = "Please sign in before saving a workout."
+            return
+        }
+
         let selectedType = workoutType.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !selectedType.isEmpty, duration > 0 else { return }
+        guard !selectedType.isEmpty else {
+            validationMessage = "Choose a workout type before saving."
+            return
+        }
+
+        guard duration > 0 else {
+            validationMessage = "Workout duration must be greater than zero."
+            return
+        }
+
+        validationMessage = nil
 
         let workout = WorkoutModel(
             user: user,

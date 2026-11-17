@@ -14,6 +14,7 @@ struct AddMealView: View {
     @State private var servings = 1
     @State private var mealCategory = ""
     @State private var date = Date()
+    @State private var validationMessage: String?
 
     private let categories = ["Breakfast", "Lunch", "Dinner", "Snack"]
 
@@ -100,6 +101,12 @@ struct AddMealView: View {
                         FormStepperRow(title: "Servings", value: $servings, range: 1...10)
                     }
 
+                    if let validationMessage {
+                        Text(validationMessage)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(FitColors.danger)
+                    }
+
                     FitButton(title: "Save meal") {
                         saveMeal()
                     }
@@ -111,17 +118,41 @@ struct AddMealView: View {
     }
 
     private func saveMeal() {
-        guard let user = authManager.currentUser else { return }
+        guard let user = authManager.currentUser else {
+            validationMessage = "Please sign in before saving a meal."
+            return
+        }
+
         let category = mealCategory.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !foodName.isEmpty, !category.isEmpty else { return }
+        guard !foodName.isEmpty else {
+            validationMessage = "Add a food name before saving."
+            return
+        }
+
+        guard !category.isEmpty else {
+            validationMessage = "Choose a meal category before saving."
+            return
+        }
+
+        let caloriesValue = Int(calories) ?? 0
+        let proteinValue = Int(protein) ?? 0
+        let carbsValue = Int(carbohydrates) ?? 0
+        let fatValue = Int(fat) ?? 0
+
+        guard caloriesValue > 0 || proteinValue > 0 || carbsValue > 0 || fatValue > 0 else {
+            validationMessage = "Enter at least one nutrition value before saving."
+            return
+        }
+
+        validationMessage = nil
 
         let meal = MealModel(
             user: user,
             foodName: foodName,
-            calories: Int(calories) ?? 0,
-            protein: Int(protein) ?? 0,
-            carbohydrates: Int(carbohydrates) ?? 0,
-            fat: Int(fat) ?? 0,
+            calories: caloriesValue,
+            protein: proteinValue,
+            carbohydrates: carbsValue,
+            fat: fatValue,
             servings: max(1, servings),
             mealCategory: category,
             date: date
