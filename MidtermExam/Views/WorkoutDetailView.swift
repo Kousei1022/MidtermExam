@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Combine
 
 struct WorkoutDetailView: View {
     @EnvironmentObject private var authManager: AuthManager
@@ -7,27 +8,43 @@ struct WorkoutDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var workout: WorkoutModel
-    @State private var workoutName: String
-    @State private var workoutType: String
-    @State private var date: Date
-    @State private var duration: Int
-    @State private var sets: Int
-    @State private var repetitions: Int
-    @State private var notes: String
+    @State private var sessionName: String
+    @State private var workoutDate: Date
+    @State private var exercises: [ExerciseDraft]
     @State private var isCompleted: Bool
-
-    private let types = ["Upper Body", "Lower Body", "Push", "Pull", "Legs", "Cardio", "Full Body"]
+    @State private var validationMessage: String?
+    @State private var timerSeconds = 0
+    @State private var timerRunning = false
+    @State private var restSeconds = 0
+    @State private var restTimerRunning = false
 
     init(workout: WorkoutModel) {
         _workout = State(initialValue: workout)
-        _workoutName = State(initialValue: workout.workoutName)
-        _workoutType = State(initialValue: workout.workoutType)
-        _date = State(initialValue: workout.date)
-        _duration = State(initialValue: workout.duration)
-        _sets = State(initialValue: workout.sets)
-        _repetitions = State(initialValue: workout.repetitions)
-        _notes = State(initialValue: workout.notes)
+        _sessionName = State(initialValue: workout.sessionTitle.isEmpty ? workout.workoutName : workout.sessionTitle)
+        _workoutDate = State(initialValue: workout.date)
+        _exercises = State(initialValue: workout.exercises.map { exercise in
+            var draft = ExerciseDraft()
+            draft.name = exercise.exerciseName
+            draft.muscleGroup = exercise.muscleGroup
+            draft.notes = exercise.notes
+            draft.duration = exercise.duration
+            draft.distance = String(exercise.distance)
+            draft.sets = exercise.sets.enumerated().map { index, set in
+                var setDraft = SetDraft()
+                setDraft.weight = String(set.weight)
+                setDraft.repetitions = set.repetitions
+                setDraft.duration = set.duration
+                setDraft.distance = String(set.distance)
+                setDraft.notes = set.notes
+                return setDraft
+            }
+            if draft.sets.isEmpty {
+                draft.sets = [SetDraft()]
+            }
+            return draft
+        })
         _isCompleted = State(initialValue: workout.isCompleted)
+        _timerSeconds = State(initialValue: workout.duration * 60)
     }
 
     var body: some View {
@@ -37,63 +54,114 @@ struct WorkoutDetailView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Workout Details")
-                        .font(.system(size: 26, weight: .bold))
-                        .foregroundStyle(.white)
-
-                    FitTextField(title: "Workout name", text: $workoutName)
-
-                    WorkoutTypePicker(types: types, selection: $workoutType)
-
-                    DatePicker("Workout date", selection: $date, displayedComponents: [.date])
-                        .tint(FitColors.primary)
-
-                    HStack {
-                        Text("Duration")
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("WORKOUT DETAILS")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(FitColors.primary)
+                        Text("Edit session")
+                            .font(.system(size: 26, weight: .bold))
                             .foregroundStyle(.white)
-                        Spacer()
-                        Stepper(value: $duration, in: 10...180) {
-                            Text("\(duration) min")
-                                .foregroundStyle(.white)
+                    }
+
+                    FitFormSection(title: "Session", icon: "dumbbell.fill") {
+                        FitTextField(title: "Workout title", text: $sessionName)
+                        HStack(spacing: 10) {
+                            Image(systemName: "calendar")
+                                .foregroundStyle(FitColors.secondary)
+                                .frame(width: 20)
+                            Text("Workout date")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(FitColors.textSecondary)
+                            Spacer(minLength: 4)
+                            DatePicker("Workout date", selection: $workoutDate, displayedComponents: [.date])
+                                .labelsHidden()
+                                .tint(FitColors.primary)
                         }
                     }
 
-                    HStack {
-                        Text("Sets")
-                            .foregroundStyle(.white)
-                        Spacer()
-                        Stepper(value: $sets, in: 1...10) {
-                            Text("\(sets)")
-                                .foregroundStyle(.white)
+                    FitCard {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("Session timer")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundStyle(.white)
+                                Spacer()
+                                Button(timerRunning ? "Pause" : "Start") {
+                                    timerRunning.toggle()
+                                }
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(.black)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 7)
+                                .background(FitColors.primary)
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            }
+                            Text(formatDuration(timerSeconds))
+                                .font(.system(size: 24, weight: .bold, design: .rounded))
+                                .foregroundStyle(FitColors.primary)
+                                .monospacedDigit()
                         }
                     }
 
-                    HStack {
-                        Text("Repetitions")
-                            .foregroundStyle(.white)
-                        Spacer()
-                        Stepper(value: $repetitions, in: 1...30) {
-                            Text("\(repetitions)")
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Text("Exercises")
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
+                            Spacer()
+                            Button {
+                                exercises.append(ExerciseDraft())
+                            } label: {
+                                Label("Add exercise", systemImage: "plus")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundStyle(.black)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(FitColors.primary)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            }
+                        }
+
+                        ForEach(Array(exercises.enumerated()), id: \.offset) { index, exercise in
+                            ExerciseEditorCard(
+                                exerciseIndex: index,
+                                exercise: Binding(
+                                    get: { exercise },
+                                    set: { exercises[index] = $0 }
+                                ),
+                                onRemove: { exercises.remove(at: index) },
+                                onAddSet: { exercises[index].sets.append(SetDraft()) },
+                                onRemoveSet: { setIndex in
+                                    if exercises[index].sets.count > 1 {
+                                        exercises[index].sets.remove(at: setIndex)
+                                    }
+                                },
+                                library: [],
+                                selectedCategory: Binding(
+                                    get: { "All" },
+                                    set: { _ in }
+                                ),
+                                searchText: Binding(
+                                    get: { "" },
+                                    set: { _ in }
+                                ),
+                                onSelectLibraryItem: { _ in }
+                            )
                         }
                     }
-
-                    TextField("", text: $notes, prompt: Text("Notes").foregroundStyle(FitColors.placeholder), axis: .vertical)
-                        .padding(12)
-                        .background(Color.white.opacity(0.04))
-                        .foregroundStyle(FitColors.text)
-                        .tint(FitColors.primary)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(FitColors.border, lineWidth: 1)
-                        )
 
                     Toggle("Completed", isOn: $isCompleted)
                         .tint(FitColors.primary)
+                        .foregroundStyle(.white)
+
+                    if let validationMessage {
+                        Text(validationMessage)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(FitColors.danger)
+                    }
 
                     HStack(spacing: 12) {
-                        FitButton(title: "Save") {
+                        FitButton(title: "Save changes") {
                             saveChanges()
                         }
                         Button("Delete") {
@@ -111,23 +179,79 @@ struct WorkoutDetailView: View {
                 .padding(20)
             }
         }
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+            if timerRunning {
+                timerSeconds += 1
+            }
+            if restTimerRunning {
+                if restSeconds > 0 {
+                    restSeconds -= 1
+                } else {
+                    restTimerRunning = false
+                }
+            }
+        }
     }
 
     private func saveChanges() {
-        workout.workoutName = workoutName
-        workout.workoutType = workoutType
-        workout.date = date
-        workout.duration = duration
-        workout.sets = sets
-        workout.repetitions = repetitions
-        workout.notes = notes
+        let filteredExercises = exercises.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        guard !filteredExercises.isEmpty else {
+            validationMessage = "Add at least one exercise before saving."
+            return
+        }
+
+        workout.sessionTitle = sessionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Workout Session" : sessionName
+        workout.workoutName = workout.sessionTitle
+        workout.date = workoutDate
         workout.isCompleted = isCompleted
+        workout.duration = max(timerSeconds / 60, filteredExercises.reduce(0) { $0 + $1.duration })
+
+        workout.exercises.removeAll()
+        var rebuilt: [WorkoutExerciseModel] = []
+
+        for (index, draft) in filteredExercises.enumerated() {
+            let exercise = WorkoutExerciseModel(
+                workout: workout,
+                exerciseName: draft.name,
+                muscleGroup: draft.muscleGroup,
+                notes: draft.notes,
+                duration: draft.duration,
+                distance: Double(draft.distance) ?? 0,
+                orderIndex: index,
+                sets: []
+            )
+            for (setIndex, setDraft) in draft.sets.enumerated() {
+                let set = WorkoutSetModel(
+                    exercise: exercise,
+                    setNumber: setIndex + 1,
+                    weight: Double(setDraft.weight) ?? 0,
+                    repetitions: setDraft.repetitions,
+                    duration: setDraft.duration,
+                    distance: Double(setDraft.distance) ?? 0,
+                    notes: setDraft.notes
+                )
+                exercise.sets.append(set)
+            }
+            rebuilt.append(exercise)
+        }
+
+        workout.exercises = rebuilt
+        workout.sets = workout.totalSetsCount
+        workout.repetitions = workout.totalRepsCount
+        workout.workoutType = filteredExercises.first?.muscleGroup ?? "Training"
+
         try? context.save()
         dismiss()
+    }
+
+    private func formatDuration(_ seconds: Int) -> String {
+        let minutes = seconds / 60
+        let remainder = seconds % 60
+        return String(format: "%02d:%02d", minutes, remainder)
     }
 }
 
 #Preview {
-    WorkoutDetailView(workout: WorkoutModel(user: UserModel(fullName: "Test", username: "test", email: "test@test.com", passwordHash: "hash"), workoutName: "Bench Press", workoutType: "Upper Body", date: Date(), duration: 45, sets: 4, repetitions: 8, notes: "Focus on control", isCompleted: true))
+    WorkoutDetailView(workout: WorkoutModel(user: UserModel(fullName: "Test", username: "test", email: "test@test.com", passwordHash: "hash"), workoutName: "Bench Press", workoutType: "Strength", date: Date(), duration: 45, sets: 4, repetitions: 8, notes: "Focus on control", isCompleted: true, sessionTitle: "Bench Press", exercises: []))
         .environmentObject(AuthManager())
 }

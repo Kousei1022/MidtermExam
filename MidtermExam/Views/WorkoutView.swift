@@ -14,14 +14,29 @@ struct WorkoutView: View {
 
     private var visibleSessions: [WorkoutModel] {
         switch selectedFilter {
-        case .all: sessions
-        case .planned: sessions.filter { !$0.isCompleted }
-        case .completed: sessions.filter(\.isCompleted)
+        case .all:
+            return sessions
+        case .planned:
+            return sessions.filter { !$0.isCompleted }
+        case .completed:
+            return sessions.filter(\.isCompleted)
         }
     }
 
     private var totalMinutes: Int {
         sessions.reduce(0) { $0 + $1.duration }
+    }
+
+    private var totalExercises: Int {
+        sessions.reduce(0) { $0 + $1.totalExerciseCount }
+    }
+
+    private var totalSets: Int {
+        sessions.reduce(0) { $0 + $1.totalSetsCount }
+    }
+
+    private var totalVolume: Int {
+        sessions.reduce(0) { $0 + $1.totalVolume }
     }
 
     private var thisWeeksSessions: [WorkoutModel] {
@@ -41,13 +56,13 @@ struct WorkoutView: View {
                             Text("TRAINING")
                                 .font(.system(size: 11, weight: .bold))
                                 .foregroundStyle(FitColors.primary)
-                            Text("Workout log")
+                            Text("Workout dashboard")
                                 .font(.system(size: 30, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
                         }
 
                         NavigationLink(destination: AddWorkoutView()) {
-                            Label("Log a workout", systemImage: "plus")
+                            Label("Log workout", systemImage: "plus")
                                 .font(.system(size: 15, weight: .bold))
                                 .frame(maxWidth: .infinity, minHeight: 52)
                                 .foregroundStyle(.black)
@@ -59,14 +74,37 @@ struct WorkoutView: View {
                         }
 
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                            StatCard(title: "Sessions", value: "\(sessions.count)", subtitle: "All time", icon: "dumbbell.fill", accent: FitColors.primary)
-                            StatCard(title: "This week", value: "\(thisWeeksSessions.count)", subtitle: "Last 7 days", icon: "calendar", accent: FitColors.secondary)
-                            StatCard(title: "Training time", value: "\(totalMinutes)", subtitle: "Minutes · all time", icon: "clock.fill", accent: .orange)
-                            StatCard(title: "Completed", value: "\(sessions.filter(\.isCompleted).count)", subtitle: "Sessions", icon: "checkmark.circle.fill", accent: FitColors.success)
+                            StatCard(title: "Today", value: "\(todayWorkoutsCount)", subtitle: "Sessions", icon: "calendar.badge.clock", accent: FitColors.primary)
+                            StatCard(title: "Exercises", value: "\(totalExercises)", subtitle: "All time", icon: "dumbbell.fill", accent: FitColors.secondary)
+                            StatCard(title: "Sets", value: "\(totalSets)", subtitle: "Completed", icon: "list.number", accent: .orange)
+                            StatCard(title: "Minutes", value: "\(totalMinutes)", subtitle: "Training", icon: "clock.fill", accent: FitColors.success)
+                            StatCard(title: "Volume", value: "\(totalVolume)", subtitle: "kg", icon: "scalemass.fill", accent: .cyan)
+                            StatCard(title: "Status", value: "\(sessions.filter(\.isCompleted).count)/\(max(1, sessions.count))", subtitle: "Completed", icon: "checkmark.circle.fill", accent: FitColors.primary)
+                        }
+
+                        FitCard {
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Text("Weekly progress")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundStyle(.white)
+                                    Spacer()
+                                    Text("\(thisWeeksSessions.count) sessions")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundStyle(FitColors.primary)
+                                }
+
+                                let progress = min(1.0, Double(thisWeeksSessions.count) / 4.0)
+                                ProgressView(value: progress)
+                                    .tint(FitColors.primary)
+                                Text("Keep your current streak going with at least four workouts this week.")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(FitColors.textSecondary)
+                            }
                         }
 
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Your sessions")
+                            Text("Recent workout history")
                                 .font(.system(size: 19, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
 
@@ -85,10 +123,10 @@ struct WorkoutView: View {
                                     Image(systemName: selectedFilter == .all ? "figure.strengthtraining.traditional" : "line.3.horizontal.decrease.circle")
                                         .font(.system(size: 22, weight: .semibold))
                                         .foregroundStyle(FitColors.primary)
-                                    Text(selectedFilter == .all ? "No workouts logged yet" : "No matching sessions")
+                                    Text(selectedFilter == .all ? "No workout sessions yet" : "No matching sessions")
                                         .font(.system(size: 16, weight: .bold))
                                         .foregroundStyle(.white)
-                                    Text(selectedFilter == .all ? "Start a session and your training history will build here." : "Try another filter to see more of your training log.")
+                                    Text(selectedFilter == .all ? "Create a workout session and your dashboard will populate with exercise data." : "Adjust the filter to see more training records.")
                                         .font(.system(size: 13))
                                         .foregroundStyle(FitColors.textSecondary)
                                 }
@@ -109,6 +147,11 @@ struct WorkoutView: View {
             }
         }
     }
+
+    private var todayWorkoutsCount: Int {
+        let today = Calendar.current.startOfDay(for: Date())
+        return sessions.filter { Calendar.current.isDate($0.date, inSameDayAs: today) }.count
+    }
 }
 
 private enum SessionFilter: String, CaseIterable, Identifiable {
@@ -120,9 +163,12 @@ private enum SessionFilter: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .all: "All"
-        case .planned: "Planned"
-        case .completed: "Done"
+        case .all:
+            return "All"
+        case .planned:
+            return "Planned"
+        case .completed:
+            return "Done"
         }
     }
 }
@@ -145,7 +191,7 @@ private struct WorkoutSessionRow: View {
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
-                    Text("\(session.workoutType) · \(session.sets) sets · \(session.date.formatted(.dateTime.month(.abbreviated).day()))")
+                    Text("\(session.totalExerciseCount) exercises · \(session.totalSetsCount) sets · \(session.date.formatted(.dateTime.month(.abbreviated).day()))")
                         .font(.system(size: 12))
                         .foregroundStyle(FitColors.textSecondary)
                         .lineLimit(1)

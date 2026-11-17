@@ -11,6 +11,8 @@ struct MidtermExamApp: App {
             modelContainer = try ModelContainer(
                 for: UserModel.self,
                 WorkoutModel.self,
+                WorkoutExerciseModel.self,
+                WorkoutSetModel.self,
                 MealModel.self,
                 WeightRecordModel.self
             )
