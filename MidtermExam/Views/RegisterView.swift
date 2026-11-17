@@ -17,21 +17,32 @@ struct RegisterView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [FitColors.background, Color(red: 0.04, green: 0.09, blue: 0.13)],
-                startPoint: .top,
-                endPoint: .bottom
+                colors: [FitColors.background, FitColors.backgroundSecondary],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
-                    Text("Create account")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundStyle(.white)
+                    VStack(alignment: .leading, spacing: 10) {
+                        Capsule()
+                            .fill(FitColors.primarySoft)
+                            .frame(width: 64, height: 32)
+                            .overlay(
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundStyle(FitColors.primary)
+                            )
 
-                    Text("Start tracking your progress from day one.")
-                        .font(.system(size: 14))
-                        .foregroundStyle(FitColors.textSecondary)
+                        Text("Create account")
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+
+                        Text("Start tracking your progress from day one.")
+                            .font(.system(size: 14))
+                            .foregroundStyle(FitColors.textSecondary)
+                    }
 
                     VStack(spacing: 14) {
                         FitTextField(title: "Full name", text: $fullName)

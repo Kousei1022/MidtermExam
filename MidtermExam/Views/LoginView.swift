@@ -15,24 +15,37 @@ struct LoginView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [FitColors.background, Color(red: 0.05, green: 0.10, blue: 0.15)],
-                startPoint: .top,
-                endPoint: .bottom
+                colors: [FitColors.background, FitColors.backgroundSecondary],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text("Welcome back")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundStyle(.white)
+                    VStack(alignment: .leading, spacing: 10) {
+                        Capsule()
+                            .fill(FitColors.primarySoft)
+                            .frame(width: 64, height: 32)
+                            .overlay(
+                                Image(systemName: "heart.fill")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundStyle(FitColors.primary)
+                            )
 
-                    Text("Sign in to continue your fitness journey.")
-                        .font(.system(size: 14))
-                        .foregroundStyle(FitColors.textSecondary)
+                        Text("Welcome back")
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+
+                        Text("Sign in to continue your fitness journey.")
+                            .font(.system(size: 14))
+                            .foregroundStyle(FitColors.textSecondary)
+                    }
+                    .padding(.top, 20)
 
                     VStack(spacing: 14) {
-                        FitTextField(title: "Email", text: $emailOrUsername, keyboardType: .emailAddress)
+                        FitTextField(title: "Email or username", text: $emailOrUsername, keyboardType: .emailAddress)
+
                         HStack {
                             if isPasswordVisible {
                                 TextField("Password", text: $password)
@@ -46,12 +59,14 @@ struct LoginView: View {
                                     .foregroundStyle(FitColors.textSecondary)
                             }
                         }
-                        .padding(12)
+                        .font(.system(size: 15, weight: .medium))
+                        .padding(14)
+                        .frame(maxWidth: .infinity, minHeight: 52)
                         .background(Color.white.opacity(0.04))
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(FitColors.border, lineWidth: 1)
                         )
 
                         HStack {
@@ -79,10 +94,14 @@ struct LoginView: View {
                             Text("Create account")
                                 .font(.system(size: 15, weight: .semibold))
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
+                                .padding(.vertical, 14)
                                 .foregroundStyle(.white)
                                 .background(Color.white.opacity(0.04))
-                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .stroke(FitColors.border, lineWidth: 1)
+                                )
                         }
                     }
                 }

@@ -19,7 +19,7 @@ struct AddWorkoutView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [FitColors.background, Color(red: 0.05, green: 0.09, blue: 0.16)], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [FitColors.background, FitColors.backgroundSecondary], startPoint: .topLeading, endPoint: .bottomTrailing)
                 .ignoresSafeArea()
 
             ScrollView {
@@ -29,7 +29,7 @@ struct AddWorkoutView: View {
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(FitColors.primary)
                         Text("Add workout")
-                            .font(.system(size: 30, weight: .bold))
+                            .font(.system(size: 30, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
                         Text("Record the details of your session.")
                             .font(.system(size: 13))
@@ -77,9 +77,13 @@ struct AddWorkoutView: View {
                         TextField("Add notes about this session", text: $notes, axis: .vertical)
                             .padding(12)
                             .frame(minHeight: 86, alignment: .topLeading)
-                            .background(Color(red: 0.96, green: 0.97, blue: 0.99))
-                            .foregroundStyle(.black)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .background(Color.white.opacity(0.04))
+                            .foregroundStyle(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(FitColors.border, lineWidth: 1)
+                            )
                     }
 
                     FitButton(title: "Save workout") {

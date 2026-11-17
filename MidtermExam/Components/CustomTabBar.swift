@@ -5,7 +5,7 @@ struct CustomTabBar: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            ForEach(0..<4, id: \ .self) { index in
+            ForEach(0..<4, id: \.self) { index in
                 let iconName = ["house.fill", "figure.strengthtraining.traditional", "fork.knife", "chart.bar.fill"][index]
                 Button {
                     selectedTab = index

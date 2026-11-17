@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct MainTabView: View {
     let currentUser: UserModel
@@ -33,6 +34,20 @@ struct MainTabView: View {
         }
         .tint(FitColors.primary)
         .navigationBarBackButtonHidden(true)
+        .onAppear {
+            let appearance = UITabBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = UIColor(FitColors.background)
+            appearance.shadowColor = UIColor(FitColors.border)
+            appearance.stackedLayoutAppearance.normal.iconColor = UIColor(FitColors.textSecondary)
+            appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor(FitColors.textSecondary)]
+            appearance.stackedLayoutAppearance.selected.iconColor = UIColor(FitColors.primary)
+            appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor(FitColors.primary)]
+            UITabBar.appearance().standardAppearance = appearance
+            if #available(iOS 15.0, *) {
+                UITabBar.appearance().scrollEdgeAppearance = appearance
+            }
+        }
     }
 }
 

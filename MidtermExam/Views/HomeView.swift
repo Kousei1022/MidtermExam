@@ -1,4 +1,3 @@
-
 import SwiftUI
 import SwiftData
 
@@ -49,8 +48,12 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(colors: [FitColors.background, Color(red: 0.05, green: 0.09, blue: 0.15)], startPoint: .top, endPoint: .bottom)
-                    .ignoresSafeArea()
+                LinearGradient(
+                    colors: [FitColors.background, FitColors.backgroundSecondary],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
@@ -67,23 +70,23 @@ struct HomeView: View {
     }
 
     private var header: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 5) {
+        HStack(alignment: .center, spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(Date.now.formatted(.dateTime.weekday(.wide).month(.wide).day()).uppercased())
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
                     .foregroundStyle(FitColors.textSecondary)
                 Text(user?.fullName ?? "User")
-                    .font(.system(size: 30, weight: .bold))
+                    .font(.system(size: 30, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
             }
             Spacer()
             NavigationLink(destination: ProfileView()) {
                 Circle()
-                    .fill(FitColors.primary)
+                    .fill(LinearGradient(colors: [FitColors.primary, FitColors.primary.opacity(0.75)], startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: 48, height: 48)
                     .overlay {
                         Text(String((user?.fullName.prefix(1) ?? "U")).uppercased())
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
                             .foregroundStyle(.black)
                     }
                     .overlay(Circle().stroke(Color.white.opacity(0.35), lineWidth: 1))
@@ -93,14 +96,14 @@ struct HomeView: View {
 
     private var weeklyGoalCard: some View {
         FitCard {
-            VStack(alignment: .leading, spacing: 14) {
-                HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .center) {
                     VStack(alignment: .leading, spacing: 5) {
                         Text("WEEKLY TRAINING GOAL")
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(FitColors.primary)
                         Text(user?.fitnessGoal ?? "Build Muscle")
-                            .font(.system(size: 22, weight: .bold))
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
                     }
                     Spacer()
@@ -108,11 +111,12 @@ struct HomeView: View {
                         .font(.system(size: 19, weight: .semibold))
                         .foregroundStyle(FitColors.primary)
                         .frame(width: 42, height: 42)
-                        .background(FitColors.primary.opacity(0.12))
+                        .background(FitColors.primarySoft)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
                 ProgressView(value: currentGoalProgress)
                     .tint(FitColors.primary)
+                    .scaleEffect(x: 1, y: 1.35, anchor: .center)
                 HStack {
                     Text("\(weeklyMinutes) of 240 min")
                     Spacer()
@@ -129,7 +133,7 @@ struct HomeView: View {
     private var weeklyStats: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Your week")
-                .font(.system(size: 19, weight: .bold))
+                .font(.system(size: 19, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
@@ -144,7 +148,7 @@ struct HomeView: View {
     private var quickActions: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Quick access")
-                .font(.system(size: 19, weight: .bold))
+                .font(.system(size: 19, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
@@ -165,7 +169,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Recent workouts")
-                    .font(.system(size: 19, weight: .bold))
+                    .font(.system(size: 19, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                 Spacer()
                 NavigationLink("See all", destination: WorkoutView())
@@ -179,7 +183,7 @@ struct HomeView: View {
                         Image(systemName: "figure.strengthtraining.traditional")
                             .foregroundStyle(FitColors.primary)
                             .frame(width: 38, height: 38)
-                            .background(FitColors.primary.opacity(0.12))
+                            .background(FitColors.primarySoft)
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                         VStack(alignment: .leading, spacing: 3) {
                             Text("Ready for your first session?")
@@ -247,10 +251,11 @@ private struct QuickActionButton: View {
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity, minHeight: 76)
-        .background(FitColors.panel)
         .foregroundStyle(FitColors.text)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(FitColors.border, lineWidth: 1))
+        .background(LinearGradient(colors: [FitColors.panel, FitColors.surfaceElevated], startPoint: .topLeading, endPoint: .bottomTrailing))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(FitColors.border, lineWidth: 1))
+        .shadow(color: .black.opacity(0.10), radius: 10, x: 0, y: 6)
     }
 }
 

@@ -44,7 +44,7 @@ struct NutritionView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(colors: [FitColors.background, Color(red: 0.04, green: 0.09, blue: 0.14)], startPoint: .top, endPoint: .bottom)
+                LinearGradient(colors: [FitColors.background, FitColors.backgroundSecondary], startPoint: .topLeading, endPoint: .bottomTrailing)
                     .ignoresSafeArea()
 
                 ScrollView {
@@ -55,7 +55,7 @@ struct NutritionView: View {
                                 .foregroundStyle(FitColors.primary)
                             HStack(alignment: .center) {
                                 Text("Meal log")
-                                    .font(.system(size: 30, weight: .bold))
+                                    .font(.system(size: 30, weight: .bold, design: .rounded))
                                     .foregroundStyle(.white)
                                 Spacer()
                                 NavigationLink(destination: AddMealView()) {
@@ -64,7 +64,9 @@ struct NutritionView: View {
                                         .padding(.horizontal, 13)
                                         .padding(.vertical, 10)
                                         .foregroundStyle(.black)
-                                        .background(FitColors.primary)
+                                        .background(
+                                            LinearGradient(colors: [FitColors.primary, FitColors.primary.opacity(0.90)], startPoint: .top, endPoint: .bottom)
+                                        )
                                         .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
                                 }
                             }
@@ -115,7 +117,7 @@ struct NutritionView: View {
 
                         HStack {
                             Text(selectedPeriod == .today ? "Today's meals" : "Last 7 days")
-                                .font(.system(size: 19, weight: .bold))
+                                .font(.system(size: 19, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
                             Spacer()
                             Text("\(visibleMeals.count) logged")
@@ -146,7 +148,7 @@ struct NutritionView: View {
                                                 .font(.system(size: 16, weight: .semibold))
                                                 .foregroundStyle(FitColors.primary)
                                                 .frame(width: 40, height: 40)
-                                                .background(FitColors.primary.opacity(0.12))
+                                                .background(FitColors.primarySoft)
                                                 .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
 
                                             VStack(alignment: .leading, spacing: 4) {

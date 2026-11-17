@@ -14,16 +14,19 @@ struct FitTextField: View {
                 TextField(title, text: text)
             }
         }
+        .font(.system(size: 15, weight: .medium))
+        .foregroundStyle(.white)
+        .tint(FitColors.primary)
         .keyboardType(keyboardType)
-        .padding(12)
-        .frame(maxWidth: .infinity)
-        .background(Color(red: 0.96, green: 0.97, blue: 0.99).opacity(0.98))
-        .foregroundStyle(.black)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .padding(14)
+        .frame(maxWidth: .infinity, minHeight: 52)
+        .background(Color.white.opacity(0.04))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.black.opacity(0.10), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(FitColors.border, lineWidth: 1)
         )
+        .shadow(color: .black.opacity(0.16), radius: 10, x: 0, y: 6)
     }
 }
 
@@ -48,25 +51,25 @@ struct WorkoutTypePicker: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "figure.strengthtraining.traditional")
-                    .foregroundStyle(FitColors.background)
+                    .foregroundStyle(FitColors.primary)
                 Text(selection.isEmpty ? placeholder : selection)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
                     .lineLimit(1)
                 Spacer(minLength: 8)
                 Image(systemName: "chevron.down")
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(.black.opacity(0.65))
+                    .foregroundStyle(FitColors.textSecondary)
             }
             .padding(.horizontal, 14)
-            .frame(maxWidth: .infinity, minHeight: 50)
-            .background(Color(red: 0.96, green: 0.97, blue: 0.99))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .background(Color.white.opacity(0.04))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color.black.opacity(0.10), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(FitColors.border, lineWidth: 1)
             )
-            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .accessibilityLabel("Workout type")
     }
@@ -80,13 +83,21 @@ struct FitButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 15, weight: .semibold))
+                .font(.system(size: 16, weight: .semibold))
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+                .padding(.vertical, 14)
                 .foregroundStyle(destructive ? .white : .black)
-                .background(destructive ? FitColors.danger : FitColors.primary)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .background(
+                    LinearGradient(
+                        colors: destructive ? [FitColors.danger, FitColors.danger.opacity(0.85)] : [FitColors.primary, FitColors.primary.opacity(0.9)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .shadow(color: (destructive ? FitColors.danger : FitColors.primary).opacity(0.30), radius: 10, x: 0, y: 8)
         }
+        .buttonStyle(.plain)
     }
 }
 
@@ -101,12 +112,19 @@ struct FitCard<Content: View>: View {
         content
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(red: 0.18, green: 0.22, blue: 0.28).opacity(0.90))
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+            .background(
+                LinearGradient(
+                    colors: [FitColors.panel, FitColors.surfaceElevated],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
             )
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(FitColors.border, lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.18), radius: 18, x: 0, y: 12)
     }
 }
 

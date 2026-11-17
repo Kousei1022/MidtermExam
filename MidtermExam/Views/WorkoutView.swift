@@ -32,7 +32,7 @@ struct WorkoutView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(colors: [FitColors.background, Color(red: 0.04, green: 0.08, blue: 0.14)], startPoint: .top, endPoint: .bottom)
+                LinearGradient(colors: [FitColors.background, FitColors.backgroundSecondary], startPoint: .topLeading, endPoint: .bottomTrailing)
                     .ignoresSafeArea()
 
                 ScrollView {
@@ -42,17 +42,20 @@ struct WorkoutView: View {
                                 .font(.system(size: 11, weight: .bold))
                                 .foregroundStyle(FitColors.primary)
                             Text("Workout log")
-                                .font(.system(size: 30, weight: .bold))
+                                .font(.system(size: 30, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
                         }
 
                         NavigationLink(destination: AddWorkoutView()) {
                             Label("Log a workout", systemImage: "plus")
                                 .font(.system(size: 15, weight: .bold))
-                                .frame(maxWidth: .infinity, minHeight: 50)
+                                .frame(maxWidth: .infinity, minHeight: 52)
                                 .foregroundStyle(.black)
-                                .background(FitColors.primary)
-                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .background(
+                                    LinearGradient(colors: [FitColors.primary, FitColors.primary.opacity(0.9)], startPoint: .top, endPoint: .bottom)
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                .shadow(color: FitColors.primary.opacity(0.30), radius: 10, x: 0, y: 8)
                         }
 
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
@@ -64,7 +67,7 @@ struct WorkoutView: View {
 
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Your sessions")
-                                .font(.system(size: 19, weight: .bold))
+                                .font(.system(size: 19, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
 
                             Picker("Filter sessions", selection: $selectedFilter) {

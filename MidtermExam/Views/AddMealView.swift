@@ -19,7 +19,7 @@ struct AddMealView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [FitColors.background, Color(red: 0.04, green: 0.08, blue: 0.14)], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [FitColors.background, FitColors.backgroundSecondary], startPoint: .topLeading, endPoint: .bottomTrailing)
                 .ignoresSafeArea()
 
             ScrollView {
@@ -29,7 +29,7 @@ struct AddMealView: View {
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(FitColors.primary)
                         Text("Add meal")
-                            .font(.system(size: 30, weight: .bold))
+                            .font(.system(size: 30, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
                         Text("Save a meal and its nutrition details.")
                             .font(.system(size: 13))
@@ -59,20 +59,20 @@ struct AddMealView: View {
                             } label: {
                                 HStack(spacing: 10) {
                                     Image(systemName: "tag.fill")
-                                        .foregroundStyle(FitColors.background)
+                                        .foregroundStyle(FitColors.primary)
                                     Text(mealCategory.isEmpty ? "Choose category" : mealCategory)
                                         .font(.system(size: 15, weight: .semibold))
-                                        .foregroundStyle(.black)
+                                        .foregroundStyle(.white)
                                     Spacer()
                                     Image(systemName: "chevron.down")
                                         .font(.system(size: 12, weight: .bold))
-                                        .foregroundStyle(.black.opacity(0.65))
+                                        .foregroundStyle(FitColors.textSecondary)
                                 }
                                 .padding(.horizontal, 14)
-                                .frame(maxWidth: .infinity, minHeight: 48)
-                                .background(Color(red: 0.96, green: 0.97, blue: 0.99))
-                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black.opacity(0.10), lineWidth: 1))
+                                .frame(maxWidth: .infinity, minHeight: 52)
+                                .background(Color.white.opacity(0.04))
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(FitColors.border, lineWidth: 1))
                             }
                         }
                     }
