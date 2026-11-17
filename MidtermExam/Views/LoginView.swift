@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import FirebaseAuth
 
 struct LoginView: View {
     @EnvironmentObject private var authManager: AuthManager
@@ -158,12 +157,12 @@ struct LoginView: View {
         isSendingReset = true
         defer { isSendingReset = false }
 
-        do {
-            try await Auth.auth().sendPasswordReset(withEmail: email)
+        if let user = try? modelContext.fetch(FetchDescriptor<UserModel>()).first(where: { $0.email.lowercased() == email.lowercased() }) {
             errorMessage = nil
-            resetMessage = "Password reset email sent. Check your inbox."
-        } catch {
-            errorMessage = "Unable to send reset email: \(error.localizedDescription)"
+            resetMessage = "Password reset is available for local accounts. Use the same email to sign in again."
+            print("Local password reminder for: \(user.email)")
+        } else {
+            errorMessage = "No local account was found for that email. Create an account first."
             resetMessage = nil
         }
     }

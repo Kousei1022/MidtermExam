@@ -94,11 +94,6 @@ struct WorkoutDetailView: View {
                         Button("Delete") {
                             context.delete(workout)
                             try? context.save()
-                            if let uid = authManager.currentUser?.firebaseUID {
-                                Task {
-                                    try? await FirebaseDataStore.shared.deleteWorkout(id: workout.id, uid: uid)
-                                }
-                            }
                             dismiss()
                         }
                         .frame(maxWidth: .infinity)
@@ -123,11 +118,6 @@ struct WorkoutDetailView: View {
         workout.notes = notes
         workout.isCompleted = isCompleted
         try? context.save()
-        if let uid = authManager.currentUser?.firebaseUID {
-            Task {
-                try? await FirebaseDataStore.shared.saveWorkout(workout, uid: uid)
-            }
-        }
         dismiss()
     }
 }

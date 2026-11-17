@@ -136,11 +136,6 @@ struct AddWorkoutView: View {
         )
         context.insert(workout)
         try? context.save()
-        if let uid = user.firebaseUID {
-            Task {
-                try? await FirebaseDataStore.shared.saveWorkout(workout, uid: uid)
-            }
-        }
         dismiss()
     }
 }
