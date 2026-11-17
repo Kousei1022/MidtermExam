@@ -9,13 +9,14 @@ struct FitTextField: View {
     var body: some View {
         Group {
             if isSecure {
-                SecureField(title, text: text)
+                SecureField("", text: text, prompt: Text(title).foregroundStyle(FitColors.placeholder))
             } else {
-                TextField(title, text: text)
+                TextField("", text: text, prompt: Text(title).foregroundStyle(FitColors.placeholder))
             }
         }
         .font(.system(size: 15, weight: .medium))
-        .foregroundStyle(.white)
+        .foregroundStyle(FitColors.text)
+        .accentColor(FitColors.primary)
         .tint(FitColors.primary)
         .keyboardType(keyboardType)
         .padding(14)

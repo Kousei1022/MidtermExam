@@ -49,11 +49,18 @@ struct LoginView: View {
                         FitTextField(title: "Email or username", text: $emailOrUsername, keyboardType: .emailAddress)
 
                         HStack {
-                            if isPasswordVisible {
-                                TextField("Password", text: $password)
-                            } else {
-                                SecureField("Password", text: $password)
+                            Group {
+                                if isPasswordVisible {
+                                    TextField("", text: $password, prompt: Text("Password").foregroundStyle(FitColors.placeholder))
+                                } else {
+                                    SecureField("", text: $password, prompt: Text("Password").foregroundStyle(FitColors.placeholder))
+                                }
                             }
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(FitColors.text)
+                            .accentColor(FitColors.primary)
+                            .tint(FitColors.primary)
+
                             Button {
                                 isPasswordVisible.toggle()
                             } label: {

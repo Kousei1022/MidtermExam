@@ -195,11 +195,16 @@ private struct DeleteAccountSheet: View {
                 .font(.system(size: 14))
                 .foregroundStyle(FitColors.textSecondary)
 
-            SecureField("Password", text: $password)
+            SecureField("", text: $password, prompt: Text("Password").foregroundStyle(FitColors.placeholder))
                 .padding(12)
-                .background(Color(red: 0.96, green: 0.97, blue: 0.99))
-                .foregroundStyle(.black)
+                .background(Color.white.opacity(0.04))
+                .foregroundStyle(FitColors.text)
+                .tint(FitColors.primary)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(FitColors.border, lineWidth: 1)
+                )
 
             if let errorMessage {
                 Text(errorMessage)

@@ -78,11 +78,16 @@ struct WorkoutDetailView: View {
                         }
                     }
 
-                    TextField("Notes", text: $notes, axis: .vertical)
+                    TextField("", text: $notes, prompt: Text("Notes").foregroundStyle(FitColors.placeholder), axis: .vertical)
                         .padding(12)
-                        .background(Color(red: 0.96, green: 0.97, blue: 0.99).opacity(0.98))
-                        .foregroundStyle(.black)
+                        .background(Color.white.opacity(0.04))
+                        .foregroundStyle(FitColors.text)
+                        .tint(FitColors.primary)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(FitColors.border, lineWidth: 1)
+                        )
 
                     Toggle("Completed", isOn: $isCompleted)
                         .tint(FitColors.primary)

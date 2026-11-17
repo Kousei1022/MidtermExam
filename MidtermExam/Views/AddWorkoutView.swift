@@ -75,11 +75,12 @@ struct AddWorkoutView: View {
                     }
 
                     FitFormSection(title: "Notes", icon: "text.alignleft") {
-                        TextField("Add notes about this session", text: $notes, axis: .vertical)
+                        TextField("", text: $notes, prompt: Text("Add notes about this session").foregroundStyle(FitColors.placeholder), axis: .vertical)
                             .padding(12)
                             .frame(minHeight: 86, alignment: .topLeading)
                             .background(Color.white.opacity(0.04))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(FitColors.text)
+                            .tint(FitColors.primary)
                             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)

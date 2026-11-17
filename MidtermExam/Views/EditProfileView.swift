@@ -64,18 +64,22 @@ struct EditProfileView: View {
                             }
                         } label: {
                             HStack {
-                                Text(fitnessGoal)
+                                Text(fitnessGoal.isEmpty ? "Choose a goal" : fitnessGoal)
                                     .font(.system(size: 15, weight: .semibold))
-                                    .foregroundStyle(.black)
+                                    .foregroundStyle(fitnessGoal.isEmpty ? FitColors.placeholder : FitColors.text)
                                 Spacer()
                                 Image(systemName: "chevron.down")
                                     .font(.system(size: 12, weight: .bold))
-                                    .foregroundStyle(.black.opacity(0.65))
+                                    .foregroundStyle(FitColors.textSecondary)
                             }
                             .padding(.horizontal, 14)
                             .frame(maxWidth: .infinity, minHeight: 48)
-                            .background(Color(red: 0.96, green: 0.97, blue: 0.99))
+                            .background(Color.white.opacity(0.04))
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .stroke(FitColors.border, lineWidth: 1)
+                            )
                         }
                     }
 

@@ -13,6 +13,7 @@ enum FitColors {
     static let secondarySoft = Color(red: 0.44, green: 0.76, blue: 0.96).opacity(0.14)
     static let text = Color.white
     static let textSecondary = Color(red: 0.74, green: 0.80, blue: 0.88)
+    static let placeholder = Color(red: 0.74, green: 0.80, blue: 0.88).opacity(0.72)
     static let border = Color.white.opacity(0.08)
     static let success = Color(red: 0.29, green: 0.80, blue: 0.51)
     static let danger = Color(red: 0.96, green: 0.41, blue: 0.42)
