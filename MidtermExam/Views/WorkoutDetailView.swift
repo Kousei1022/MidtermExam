@@ -36,7 +36,7 @@ struct WorkoutDetailView: View {
                 setDraft.duration = set.duration
                 setDraft.distance = String(set.distance)
                 setDraft.notes = set.notes
-                setDraft.isCompleted = set.isCompleted
+                setDraft.isCompleted = set.isCompleted ?? false
                 return setDraft
             }
             if draft.sets.isEmpty {

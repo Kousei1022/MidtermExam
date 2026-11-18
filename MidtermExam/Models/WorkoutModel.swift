@@ -39,7 +39,7 @@ final class WorkoutModel {
 
     var completedSetCount: Int {
         exercises.reduce(0) { partialResult, exercise in
-            partialResult + exercise.sets.filter { $0.isCompleted }.count
+            partialResult + exercise.sets.filter { ($0.isCompleted ?? false) }.count
         }
     }
 
@@ -142,7 +142,7 @@ final class WorkoutSetModel {
     var duration: Int
     var distance: Double
     var notes: String
-    var isCompleted: Bool
+    var isCompleted: Bool?
 
     init(
         id: UUID = UUID(),
@@ -153,7 +153,7 @@ final class WorkoutSetModel {
         duration: Int = 0,
         distance: Double = 0,
         notes: String = "",
-        isCompleted: Bool = false
+        isCompleted: Bool? = false
     ) {
         self.id = id
         self.exercise = exercise

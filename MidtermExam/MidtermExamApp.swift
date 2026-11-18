@@ -8,17 +8,31 @@ struct MidtermExamApp: App {
     let modelContainer: ModelContainer
 
     init() {
+        let schema = Schema([
+            UserModel.self,
+            WorkoutModel.self,
+            WorkoutExerciseModel.self,
+            WorkoutSetModel.self,
+            MealModel.self,
+            WeightRecordModel.self
+        ])
+
         do {
-            modelContainer = try ModelContainer(
-                for: UserModel.self,
-                WorkoutModel.self,
-                WorkoutExerciseModel.self,
-                WorkoutSetModel.self,
-                MealModel.self,
-                WeightRecordModel.self
-            )
+            modelContainer = try ModelContainer(for: schema)
         } catch {
-            fatalError("Failed to create model container: \(error)")
+            print("SwiftData persistent container could not be opened: \(error)")
+            do {
+                let recoveryConfiguration = ModelConfiguration(
+                    schema: schema,
+                    isStoredInMemoryOnly: true
+                )
+                modelContainer = try ModelContainer(
+                    for: schema,
+                    configurations: recoveryConfiguration
+                )
+            } catch {
+                fatalError("SwiftData could not create a recovery container: \(error)")
+            }
         }
     }
 
