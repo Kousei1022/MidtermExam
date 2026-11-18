@@ -192,6 +192,10 @@ struct WorkoutDetailView: View {
                 }
             }
         }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            FitBackButton(dismiss: dismiss)
+        }
     }
 
     private func saveChanges() {

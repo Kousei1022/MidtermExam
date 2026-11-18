@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct NotificationView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var workoutReminders = true
     @State private var mealReminders = true
     @State private var progressUpdates = true
@@ -22,6 +23,10 @@ struct NotificationView: View {
                 ToggleRow(label: "Motivational messages", isOn: $motivationalMessages)
             }
             .padding(20)
+        }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            FitBackButton(dismiss: dismiss)
         }
     }
 }

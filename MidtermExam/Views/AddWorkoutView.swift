@@ -236,7 +236,10 @@ struct AddWorkoutView: View {
                 workoutSessionStore.startNewSession()
             }
         }
-        .navigationBarBackButtonHidden(false)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            FitBackButton(dismiss: dismiss)
+        }
     }
 
     private func saveWorkout() {

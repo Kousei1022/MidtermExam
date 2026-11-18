@@ -96,6 +96,10 @@ struct EditProfileView: View {
                 }
                 .padding(20)
             }
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                FitBackButton(dismiss: dismiss)
+            }
         }
     }
 
