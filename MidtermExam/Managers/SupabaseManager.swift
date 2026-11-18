@@ -11,8 +11,5 @@ final class SupabaseManager {
     }
 
     func configure() {
-        // Add your Supabase URL + anon key here when you are ready.
-        // Example:
-        // SupabaseClient(supabaseURL: URL(string: "https://...supabase.co")!, supabaseKey: "...")
     }
 }
