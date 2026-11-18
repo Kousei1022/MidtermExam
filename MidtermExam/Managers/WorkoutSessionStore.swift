@@ -15,6 +15,7 @@ final class WorkoutSessionStore: ObservableObject {
     @Published var hasStarted = false
     @Published var selectedCategory = "All"
     @Published var searchText = ""
+    @Published var elapsedSeconds = 0
 
     var isActive: Bool {
         hasStarted || !sessionName.isEmpty || exercises.contains { !$0.name.isEmpty || $0.sets.contains { $0.repetitions > 0 || $0.weight != "0" } }
@@ -24,8 +25,9 @@ final class WorkoutSessionStore: ObservableObject {
         sessionName = ""
         workoutDate = Date()
         exercises = [ExerciseDraft()]
-        timerSeconds = 0
-        timerRunning = true
+        timerSeconds = 60 * 60
+        elapsedSeconds = 0
+        timerRunning = false
         restSeconds = 60
         restTimerRunning = false
         hasStarted = true

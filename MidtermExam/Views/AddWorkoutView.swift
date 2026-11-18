@@ -221,7 +221,12 @@ struct AddWorkoutView: View {
         }
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
             if timerRunningBinding.wrappedValue {
-                timerSecondsBinding.wrappedValue += 1
+                if timerSecondsBinding.wrappedValue > 0 {
+                    timerSecondsBinding.wrappedValue -= 1
+                    workoutSessionStore.elapsedSeconds += 1
+                } else {
+                    timerRunningBinding.wrappedValue = false
+                }
             }
             if restTimerRunningBinding.wrappedValue {
                 if restSecondsBinding.wrappedValue > 0 {
@@ -298,7 +303,7 @@ struct AddWorkoutView: View {
             workoutType: filteredExercises.first?.muscleGroup ?? "Training",
             date: workoutDateBinding.wrappedValue,
             endDate: Date(),
-            duration: max(timerSecondsBinding.wrappedValue / 60, totalExerciseDuration),
+            duration: max(workoutSessionStore.elapsedSeconds / 60, totalExerciseDuration),
             sets: filteredExercises.reduce(0) { $0 + $1.sets.count },
             repetitions: filteredExercises.reduce(0) { total, exercise in
                 total + exercise.sets.reduce(0) { $0 + $1.repetitions }

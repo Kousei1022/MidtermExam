@@ -182,7 +182,11 @@ struct WorkoutDetailView: View {
         }
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
             if timerRunning {
-                timerSeconds += 1
+                if timerSeconds > 0 {
+                    timerSeconds -= 1
+                } else {
+                    timerRunning = false
+                }
             }
             if restTimerRunning {
                 if restSeconds > 0 {
