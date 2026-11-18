@@ -13,3 +13,18 @@ final class SupabaseManager {
     func configure() {
     }
 }
+
+import Supabase
+
+final class SupabaseManager {
+    static let shared = SupabaseManager()
+
+    let client: SupabaseClient
+
+    private init() {
+        client = SupabaseClient(
+            supabaseURL: URL(string: "https://vufsotdzytnnrhnjfdip.supabase.co")!,
+            supabaseKey: "sb_publishable_N215QYsClJ_0LsnHqFcc6g_2FLcvxZR"
+        )
+    }
+}
