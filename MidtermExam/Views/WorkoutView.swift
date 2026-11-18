@@ -1,4 +1,3 @@
-
 import SwiftUI
 import SwiftData
 
@@ -24,7 +23,7 @@ struct WorkoutView: View {
     }
 
     private var totalMinutes: Int {
-        sessions.reduce(0) { $0 + $1.duration }
+        sessions.filter { $0.isCompleted }.reduce(0) { $0 + $1.duration }
     }
 
     private var totalExercises: Int {

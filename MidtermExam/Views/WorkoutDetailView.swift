@@ -36,6 +36,7 @@ struct WorkoutDetailView: View {
                 setDraft.duration = set.duration
                 setDraft.distance = String(set.distance)
                 setDraft.notes = set.notes
+                setDraft.isCompleted = set.isCompleted
                 return setDraft
             }
             if draft.sets.isEmpty {
@@ -206,6 +207,20 @@ struct WorkoutDetailView: View {
         workout.isCompleted = isCompleted
         workout.duration = max(timerSeconds / 60, filteredExercises.reduce(0) { $0 + $1.duration })
 
+        if isCompleted {
+            workout.endDate = Date()
+        }
+        workout.refreshDerivedSummary()
+        workout.sets = workout.totalSetsCount
+        workout.repetitions = workout.totalRepsCount
+        workout.workoutType = filteredExercises.first?.muscleGroup ?? "Training"
+
+        for oldExercise in workout.exercises {
+            for oldSet in oldExercise.sets {
+                context.delete(oldSet)
+            }
+            context.delete(oldExercise)
+        }
         workout.exercises.removeAll()
         var rebuilt: [WorkoutExerciseModel] = []
 
@@ -228,7 +243,8 @@ struct WorkoutDetailView: View {
                     repetitions: setDraft.repetitions,
                     duration: setDraft.duration,
                     distance: Double(setDraft.distance) ?? 0,
-                    notes: setDraft.notes
+                    notes: setDraft.notes,
+                    isCompleted: setDraft.isCompleted
                 )
                 exercise.sets.append(set)
             }
@@ -236,12 +252,13 @@ struct WorkoutDetailView: View {
         }
 
         workout.exercises = rebuilt
-        workout.sets = workout.totalSetsCount
-        workout.repetitions = workout.totalRepsCount
-        workout.workoutType = filteredExercises.first?.muscleGroup ?? "Training"
 
-        try? context.save()
-        dismiss()
+        do {
+            try context.save()
+            dismiss()
+        } catch {
+            validationMessage = "Could not save changes. Please try again."
+        }
     }
 
     private func formatDuration(_ seconds: Int) -> String {

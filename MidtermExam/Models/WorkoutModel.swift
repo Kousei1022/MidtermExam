@@ -8,6 +8,7 @@ final class WorkoutModel {
     var workoutName: String
     var workoutType: String
     var date: Date
+    var endDate: Date?
     var duration: Int
     var sets: Int
     var repetitions: Int
@@ -36,12 +37,19 @@ final class WorkoutModel {
         }
     }
 
+    var completedSetCount: Int {
+        exercises.reduce(0) { partialResult, exercise in
+            partialResult + exercise.sets.filter { $0.isCompleted }.count
+        }
+    }
+
     init(
         id: UUID = UUID(),
         user: UserModel? = nil,
         workoutName: String,
         workoutType: String = "Training",
         date: Date,
+        endDate: Date? = nil,
         duration: Int = 0,
         sets: Int = 0,
         repetitions: Int = 0,
@@ -55,6 +63,7 @@ final class WorkoutModel {
         self.workoutName = workoutName
         self.workoutType = workoutType
         self.date = date
+        self.endDate = endDate
         self.duration = duration
         self.sets = sets
         self.repetitions = repetitions
@@ -133,6 +142,7 @@ final class WorkoutSetModel {
     var duration: Int
     var distance: Double
     var notes: String
+    var isCompleted: Bool
 
     init(
         id: UUID = UUID(),
@@ -142,7 +152,8 @@ final class WorkoutSetModel {
         repetitions: Int = 0,
         duration: Int = 0,
         distance: Double = 0,
-        notes: String = ""
+        notes: String = "",
+        isCompleted: Bool = false
     ) {
         self.id = id
         self.exercise = exercise
@@ -152,5 +163,6 @@ final class WorkoutSetModel {
         self.duration = duration
         self.distance = distance
         self.notes = notes
+        self.isCompleted = isCompleted
     }
 }

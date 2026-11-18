@@ -4,6 +4,7 @@ import SwiftData
 @main
 struct MidtermExamApp: App {
     @StateObject private var authManager = AuthManager()
+    @StateObject private var workoutSessionStore = WorkoutSessionStore()
     let modelContainer: ModelContainer
 
     init() {
@@ -25,6 +26,7 @@ struct MidtermExamApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(authManager)
+                .environmentObject(workoutSessionStore)
                 .modelContainer(modelContainer)
         }
     }

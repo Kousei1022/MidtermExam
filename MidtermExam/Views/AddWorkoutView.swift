@@ -4,21 +4,23 @@ import Combine
 
 struct AddWorkoutView: View {
     @EnvironmentObject private var authManager: AuthManager
+    @EnvironmentObject private var workoutSessionStore: WorkoutSessionStore
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
-    @State private var sessionName = ""
-    @State private var workoutDate = Date()
-    @State private var exercises: [ExerciseDraft] = [ExerciseDraft()]
+    private var sessionNameBinding: Binding<String> { $workoutSessionStore.sessionName }
+    private var workoutDateBinding: Binding<Date> { $workoutSessionStore.workoutDate }
+    private var exercisesBinding: Binding<[ExerciseDraft]> { $workoutSessionStore.exercises }
+    private var timerSecondsBinding: Binding<Int> { $workoutSessionStore.timerSeconds }
+    private var timerRunningBinding: Binding<Bool> { $workoutSessionStore.timerRunning }
+    private var restSecondsBinding: Binding<Int> { $workoutSessionStore.restSeconds }
+    private var restTimerRunningBinding: Binding<Bool> { $workoutSessionStore.restTimerRunning }
+
     @State private var validationMessage: String?
-    @State private var isWorkoutStarted = false
-    @State private var timerSeconds = 0
-    @State private var timerRunning = false
-    @State private var restSeconds = 0
-    @State private var restTimerRunning = false
     @State private var searchText = ""
     @State private var selectedCategory = "All"
     @State private var isSaving = false
+    @State private var isSaveLocked = false
 
     private let exerciseLibrary = [
         ExerciseLibraryItem(name: "Bench Press", category: "Chest"),
@@ -47,9 +49,9 @@ struct AddWorkoutView: View {
     private let restOptions = [30, 60, 90, 120]
 
     private var filteredLibrary: [ExerciseLibraryItem] {
-        exerciseLibrary.filter { item in
-            let matchesCategory = selectedCategory == "All" || item.category == selectedCategory
-            let matchesSearch = searchText.isEmpty || item.name.lowercased().contains(searchText.lowercased())
+        exerciseLibrary.filter { (item: ExerciseLibraryItem) -> Bool in
+            let matchesCategory = workoutSessionStore.selectedCategory == "All" || item.category == workoutSessionStore.selectedCategory
+            let matchesSearch = workoutSessionStore.searchText.isEmpty || item.name.lowercased().contains(workoutSessionStore.searchText.lowercased())
             return matchesCategory && matchesSearch
         }
     }
@@ -74,7 +76,7 @@ struct AddWorkoutView: View {
                     }
 
                     FitFormSection(title: "Session", icon: "dumbbell.fill") {
-                        FitTextField(title: "Workout title", text: $sessionName)
+                        FitTextField(title: "Workout title", text: sessionNameBinding)
                         HStack(spacing: 10) {
                             Image(systemName: "calendar")
                                 .foregroundStyle(FitColors.secondary)
@@ -83,7 +85,7 @@ struct AddWorkoutView: View {
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundStyle(FitColors.textSecondary)
                             Spacer(minLength: 4)
-                            DatePicker("Workout date", selection: $workoutDate, displayedComponents: [.date])
+                            DatePicker("Workout date", selection: workoutDateBinding, displayedComponents: [.date])
                                 .labelsHidden()
                                 .tint(FitColors.primary)
                         }
@@ -96,9 +98,9 @@ struct AddWorkoutView: View {
                                     .font(.system(size: 16, weight: .bold))
                                     .foregroundStyle(.white)
                                 Spacer()
-                                Button(timerRunning ? "Pause" : "Start") {
-                                    isWorkoutStarted = true
-                                    timerRunning.toggle()
+                                Button(timerRunningBinding.wrappedValue ? "Pause" : "Start") {
+                                    workoutSessionStore.hasStarted = true
+                                    timerRunningBinding.wrappedValue.toggle()
                                 }
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundStyle(.black)
@@ -108,7 +110,7 @@ struct AddWorkoutView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                             }
 
-                            Text(formatDuration(timerSeconds))
+                            Text(formatDuration(timerSecondsBinding.wrappedValue))
                                 .font(.system(size: 26, weight: .bold, design: .rounded))
                                 .foregroundStyle(FitColors.primary)
                                 .monospacedDigit()
@@ -122,8 +124,8 @@ struct AddWorkoutView: View {
                                     .font(.system(size: 16, weight: .bold))
                                     .foregroundStyle(.white)
                                 Spacer()
-                                Button(restTimerRunning ? "Pause" : "Start") {
-                                    restTimerRunning.toggle()
+                                Button(restTimerRunningBinding.wrappedValue ? "Pause" : "Start") {
+                                    restTimerRunningBinding.wrappedValue.toggle()
                                 }
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundStyle(.black)
@@ -133,7 +135,7 @@ struct AddWorkoutView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                             }
 
-                            Text(formatDuration(restSeconds))
+                            Text(formatDuration(restSecondsBinding.wrappedValue))
                                 .font(.system(size: 22, weight: .bold, design: .rounded))
                                 .foregroundStyle(FitColors.secondary)
                                 .monospacedDigit()
@@ -141,8 +143,8 @@ struct AddWorkoutView: View {
                             HStack(spacing: 8) {
                                 ForEach(restOptions, id: \ .self) { option in
                                     Button("\(option)s") {
-                                        restSeconds = option
-                                        restTimerRunning = false
+                                        restSecondsBinding.wrappedValue = option
+                                        restTimerRunningBinding.wrappedValue = false
                                     }
                                     .font(.system(size: 11, weight: .semibold))
                                     .foregroundStyle(.white)
@@ -162,7 +164,7 @@ struct AddWorkoutView: View {
                                 .foregroundStyle(.white)
                             Spacer()
                             Button {
-                                exercises.append(ExerciseDraft())
+                                exercisesBinding.wrappedValue.append(ExerciseDraft())
                             } label: {
                                 Label("Add exercise", systemImage: "plus")
                                     .font(.system(size: 13, weight: .semibold))
@@ -174,30 +176,30 @@ struct AddWorkoutView: View {
                             }
                         }
 
-                        ForEach(Array(exercises.enumerated()), id: \.offset) { index, exercise in
+                        ForEach(Array(exercisesBinding.wrappedValue.enumerated()), id: \.offset) { index, exercise in
                             ExerciseEditorCard(
                                 exerciseIndex: index,
                                 exercise: Binding(
                                     get: { exercise },
-                                    set: { exercises[index] = $0 }
+                                    set: { exercisesBinding.wrappedValue[index] = $0 }
                                 ),
                                 onRemove: {
-                                    exercises.remove(at: index)
+                                    exercisesBinding.wrappedValue.remove(at: index)
                                 },
                                 onAddSet: {
-                                    exercises[index].sets.append(SetDraft())
+                                    exercisesBinding.wrappedValue[index].sets.append(SetDraft())
                                 },
                                 onRemoveSet: { setIndex in
-                                    if exercises[index].sets.count > 1 {
-                                        exercises[index].sets.remove(at: setIndex)
+                                    if exercisesBinding.wrappedValue[index].sets.count > 1 {
+                                        exercisesBinding.wrappedValue[index].sets.remove(at: setIndex)
                                     }
                                 },
                                 library: filteredLibrary,
-                                selectedCategory: $selectedCategory,
-                                searchText: $searchText,
+                                selectedCategory: $workoutSessionStore.selectedCategory,
+                                searchText: $workoutSessionStore.searchText,
                                 onSelectLibraryItem: { item in
-                                    exercises[index].name = item.name
-                                    exercises[index].muscleGroup = item.category
+                                    exercisesBinding.wrappedValue[index].name = item.name
+                                    exercisesBinding.wrappedValue[index].muscleGroup = item.category
                                 }
                             )
                         }
@@ -218,15 +220,20 @@ struct AddWorkoutView: View {
             }
         }
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
-            if timerRunning {
-                timerSeconds += 1
+            if timerRunningBinding.wrappedValue {
+                timerSecondsBinding.wrappedValue += 1
             }
-            if restTimerRunning {
-                if restSeconds > 0 {
-                    restSeconds -= 1
+            if restTimerRunningBinding.wrappedValue {
+                if restSecondsBinding.wrappedValue > 0 {
+                    restSecondsBinding.wrappedValue -= 1
                 } else {
-                    restTimerRunning = false
+                    restTimerRunningBinding.wrappedValue = false
                 }
+            }
+        }
+        .onAppear {
+            if !workoutSessionStore.isActive {
+                workoutSessionStore.startNewSession()
             }
         }
         .navigationBarBackButtonHidden(false)
@@ -238,7 +245,7 @@ struct AddWorkoutView: View {
             return
         }
 
-        let filteredExercises = exercises.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        let filteredExercises = exercisesBinding.wrappedValue.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         guard !filteredExercises.isEmpty else {
             validationMessage = "Add at least one exercise before saving."
             return
@@ -272,7 +279,8 @@ struct AddWorkoutView: View {
                     repetitions: sanitizedReps,
                     duration: sanitizedDuration,
                     distance: Double(setDraft.distance) ?? 0,
-                    notes: setDraft.notes
+                    notes: setDraft.notes,
+                    isCompleted: setDraft.isCompleted
                 )
                 exercise.sets.append(setModel)
             }
@@ -280,13 +288,14 @@ struct AddWorkoutView: View {
             cleanExercises.append(exercise)
         }
 
-        let sessionTitle = sessionName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let sessionTitle = sessionNameBinding.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines)
         let workout = WorkoutModel(
             user: user,
             workoutName: sessionTitle.isEmpty ? "Workout Session" : sessionTitle,
             workoutType: filteredExercises.first?.muscleGroup ?? "Training",
-            date: workoutDate,
-            duration: max(timerSeconds / 60, totalExerciseDuration),
+            date: workoutDateBinding.wrappedValue,
+            endDate: Date(),
+            duration: max(timerSecondsBinding.wrappedValue / 60, totalExerciseDuration),
             sets: filteredExercises.reduce(0) { $0 + $1.sets.count },
             repetitions: filteredExercises.reduce(0) { total, exercise in
                 total + exercise.sets.reduce(0) { $0 + $1.repetitions }
@@ -301,9 +310,21 @@ struct AddWorkoutView: View {
             exercise.workout = workout
         }
 
+        guard !isSaveLocked else { return }
+        isSaveLocked = true
+        isSaving = true
         context.insert(workout)
-        try? context.save()
-        dismiss()
+        do {
+            try context.save()
+            workoutSessionStore.clear()
+            validationMessage = nil
+            dismiss()
+        } catch {
+            context.delete(workout)
+            validationMessage = "Could not save this workout. Please try again."
+            isSaveLocked = false
+        }
+        isSaving = false
     }
 
     private func formatDuration(_ seconds: Int) -> String {
@@ -500,6 +521,14 @@ struct ExerciseEditorCard: View {
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                             .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(FitColors.border, lineWidth: 1))
 
+                            Button {
+                                exercise.sets[setIndex].isCompleted.toggle()
+                            } label: {
+                                Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
+                                    .foregroundStyle(set.isCompleted ? FitColors.success : FitColors.textSecondary)
+                            }
+                            .accessibilityLabel(set.isCompleted ? "Mark set incomplete" : "Mark set complete")
+
                             Button(role: .destructive) {
                                 onRemoveSet(setIndex)
                             } label: {
@@ -515,31 +544,8 @@ struct ExerciseEditorCard: View {
     }
 }
 
-struct ExerciseDraft {
-    var id = UUID()
-    var name = ""
-    var muscleGroup = "Chest"
-    var notes = ""
-    var duration = 0
-    var distance = "0"
-    var sets: [SetDraft] = [SetDraft()]
-}
-
-struct SetDraft {
-    var id = UUID()
-    var weight = "0"
-    var repetitions = 0
-    var duration = 0
-    var distance = "0"
-    var notes = ""
-}
-
-struct ExerciseLibraryItem {
-    let name: String
-    let category: String
-}
-
 #Preview {
     AddWorkoutView()
         .environmentObject(AuthManager())
+        .environmentObject(WorkoutSessionStore())
 }
