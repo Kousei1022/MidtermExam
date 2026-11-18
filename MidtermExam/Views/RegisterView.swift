@@ -4,6 +4,7 @@ import SwiftData
 struct RegisterView: View {
     @EnvironmentObject private var authManager: AuthManager
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
 
     @State private var fullName = ""
     @State private var username = ""
@@ -72,6 +73,25 @@ struct RegisterView: View {
         }
         .fullScreenCover(isPresented: $isRegistered) {
             MainTabView(currentUser: authManager.currentUser ?? UserModel(fullName: "", username: "", email: "", passwordHash: ""))
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 14, weight: .bold))
+                        Text("Back")
+                            .font(.system(size: 15, weight: .semibold))
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(Color.white.opacity(0.06))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+            }
         }
     }
 

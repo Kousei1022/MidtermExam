@@ -4,6 +4,7 @@ import SwiftData
 struct LoginView: View {
     @EnvironmentObject private var authManager: AuthManager
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @State private var emailOrUsername = ""
     @State private var password = ""
     @State private var isPasswordVisible = false
@@ -127,6 +128,25 @@ struct LoginView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 14, weight: .bold))
+                        Text("Back")
+                            .font(.system(size: 15, weight: .semibold))
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(Color.white.opacity(0.06))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+            }
+        }
         .onAppear {
             authManager.configure(modelContext: modelContext)
         }
