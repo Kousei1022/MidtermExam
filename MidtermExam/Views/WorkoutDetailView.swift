@@ -28,7 +28,7 @@ struct WorkoutDetailView: View {
             draft.muscleGroup = exercise.muscleGroup
             draft.notes = exercise.notes
             draft.duration = exercise.duration
-            draft.distance = String(exercise.distance)
+            draft.weight = String(exercise.distance)
             draft.sets = exercise.sets.enumerated().map { index, set in
                 var setDraft = SetDraft()
                 setDraft.weight = String(set.weight)
@@ -235,7 +235,7 @@ struct WorkoutDetailView: View {
                 muscleGroup: draft.muscleGroup,
                 notes: draft.notes,
                 duration: draft.duration,
-                distance: Double(draft.distance) ?? 0,
+                distance: Double(draft.weight) ?? 0,
                 orderIndex: index,
                 sets: []
             )

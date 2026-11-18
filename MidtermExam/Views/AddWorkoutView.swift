@@ -264,7 +264,7 @@ struct AddWorkoutView: View {
                 muscleGroup: draft.muscleGroup,
                 notes: draft.notes,
                 duration: draft.duration,
-                distance: Double(draft.distance) ?? 0,
+                distance: Double(draft.weight) ?? 0,
                 orderIndex: index,
                 sets: []
             )
@@ -451,10 +451,10 @@ struct ExerciseEditorCard: View {
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Distance")
+                        Text("Weight")
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(FitColors.textSecondary)
-                        TextField("0", text: $exercise.distance)
+                        TextField("0", text: $exercise.weight)
                             .keyboardType(.decimalPad)
                             .padding(12)
                             .background(Color.white.opacity(0.04))
@@ -493,24 +493,23 @@ struct ExerciseEditorCard: View {
                         }
                     }
 
+                    HStack(spacing: 8) {
+                        Text("Set")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(FitColors.textSecondary)
+                            .frame(width: 52, alignment: .leading)
+                        Text("Reps")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(FitColors.textSecondary)
+                        Spacer()
+                    }
+
                     ForEach(Array(exercise.sets.enumerated()), id: \.offset) { setIndex, set in
                         HStack(alignment: .center, spacing: 8) {
                             Text("Set \(setIndex + 1)")
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundStyle(FitColors.textSecondary)
                                 .frame(width: 52, alignment: .leading)
-
-                            TextField("kg", text: Binding(
-                                get: { set.weight },
-                                set: { exercise.sets[setIndex].weight = $0 }
-                            ))
-                            .keyboardType(.decimalPad)
-                            .frame(maxWidth: 80)
-                            .padding(10)
-                            .background(Color.white.opacity(0.04))
-                            .foregroundStyle(FitColors.text)
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(FitColors.border, lineWidth: 1))
 
                             TextField("reps", text: Binding(
                                 get: { String(set.repetitions) },

@@ -6,7 +6,7 @@ struct ExerciseDraft: Identifiable {
     var muscleGroup = "Chest"
     var notes = ""
     var duration = 0
-    var distance = "0"
+    var weight = "0"
     var sets: [SetDraft] = [SetDraft()]
 }
 
